@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --radius: 1rem;
+  --background: #fbf7ee;
+  --foreground: #221c35;
+  --card: #ffffff;
+  --border: #221c35;
+  --primary: #f26430;
+  --primary-foreground: #ffffff;
+  --secondary: #fed766;
+  --muted: #f1ebd9;
+  --muted-foreground: #6e6782;
+
+  /* ألوان الحصص والمواد والمهام */
+  --coral: #ff7f50;
+  --sun: #ffda66;
+  --mint: #70e4ba;
+  --sky: #70c4ff;
+  --grape: #c084fc;
+  --rose: #fda4af;
+
+  --shadow-pop: 4px 4px 0 0 #221c35;
+  --shadow-pop-sm: 2px 2px 0 0 #221c35;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, sans-serif;
+  background-image: radial-gradient(#221c35 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-color: #faf6ed;
+}
+
+/* فئات الألوان المخصصة */
+.bg-coral { background-color: var(--coral) !important; color: #1f1b2e !important; }
+.bg-sun { background-color: var(--sun) !important; color: #1f1b2e !important; }
+.bg-mint { background-color: var(--mint) !important; color: #1f1b2e !important; }
+.bg-sky { background-color: var(--sky) !important; color: #1f1b2e !important; }
+.bg-grape { background-color: var(--grape) !important; color: #1f1b2e !important; }
+.bg-rose { background-color: var(--rose) !important; color: #1f1b2e !important; }
+.bg-primary { background-color: var(--primary) !important; color: #ffffff !important; }
+.bg-secondary { background-color: var(--secondary) !important; }
+.bg-muted { background-color: var(--muted) !important; }
+.bg-background { background-color: var(--background) !important; }
+.bg-card { background-color: var(--card) !important; }
+.text-foreground { color: var(--foreground) !important; }
+.text-muted-foreground { color: var(--muted-foreground) !important; }
+.border-border { border-color: var(--border) !important; }
+
+/* تأثير الكروت البارزة والأزرار */
+.pop-card {
+  background: #ffffff;
+  border: 2px solid #221c35;
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-pop);
+}
+
+.pop-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 2px solid #221c35;
+  border-radius: 9999px;
+  padding: 0.5rem 1.1rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-pop-sm);
+  transition: transform 0.12s, box-shadow 0.12s;
+  cursor: pointer;
+}
+
+.pop-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-pop);
+}
+
+.pop-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.pop-input {
+  width: 100%;
+  border: 2px solid #221c35;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  padding: 0.55rem 0.8rem;
+  outline: none;
+}
