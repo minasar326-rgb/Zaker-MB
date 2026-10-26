@@ -71,6 +71,7 @@ body {
   box-shadow: var(--shadow-pop-sm);
   transition: transform 0.12s, box-shadow 0.12s;
   cursor: pointer;
+  user-select: none;
 }
 
 .pop-btn:hover {
@@ -90,4 +91,48 @@ body {
   background: #ffffff;
   padding: 0.55rem 0.8rem;
   outline: none;
+}
+
+/* تنسيقات الطباعة والتصدير كـ PDF */
+.print-only {
+  display: none !important;
+}
+
+@media print {
+  body {
+    background-color: #ffffff !important;
+    background-image: none !important;
+    color: #111827 !important;
+    font-size: 12pt;
+  }
+
+  header,
+  nav,
+  .no-print,
+  button:not(.print-keep),
+  select {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .pop-card {
+    box-shadow: none !important;
+    border: 1.5px solid #111827 !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+
+  .pop-btn {
+    box-shadow: none !important;
+  }
+
+  /* Ensure colors print properly */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 }
