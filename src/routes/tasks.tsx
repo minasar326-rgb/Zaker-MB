@@ -189,7 +189,7 @@ function TasksPage() {
         <div>
           <h1 className="text-3xl font-black">{t("navTasks")}</h1>
           <p className="text-xs font-bold text-muted-foreground mt-0.5">
-            نظّم تفاصيل واجباتك، مشاريعك، ومواعيد تسليمك بدقة
+            {t("taskSubtitle")}
           </p>
         </div>
 
@@ -430,7 +430,7 @@ function TasksPage() {
                     <div className="mt-2 flex items-center gap-1.5">
                       <input
                         type="text"
-                        placeholder="+ إضافة خطوة فرعية سريعة..."
+                        placeholder={t("quickAddStep")}
                         value={cardStepInput[x.id] || ""}
                         onChange={(e) =>
                           setCardStepInput({
@@ -548,7 +548,7 @@ function TasksPage() {
                 autoFocus
                 required
                 className="pop-input"
-                placeholder="مثلاً: حل تدريبات الحركة في خط مستقيم..."
+                placeholder={t("placeholderTaskTitle")}
                 value={draft.title}
                 onChange={(e) => setDraft({ ...draft, title: e.target.value })}
               />
@@ -562,7 +562,7 @@ function TasksPage() {
                 </label>
                 <input
                   className="pop-input"
-                  placeholder="فيزياء، رياضيات..."
+                  placeholder={t("placeholderSubject")}
                   value={draft.subject}
                   onChange={(e) => setDraft({ ...draft, subject: e.target.value })}
                   list="subjects-modal-list"
@@ -602,7 +602,7 @@ function TasksPage() {
               <textarea
                 rows={2}
                 className="pop-input resize-none"
-                placeholder="صفحات الكتاب، تفاصيل المسائل، روابط أو ملاحظات إضافية..."
+                placeholder={t("placeholderDescription")}
                 value={draft.description}
                 onChange={(e) =>
                   setDraft({ ...draft, description: e.target.value })
@@ -618,7 +618,7 @@ function TasksPage() {
               <div className="flex gap-2 mb-2">
                 <input
                   type="text"
-                  placeholder="خطوة أو مرحلة في المهمة..."
+                  placeholder={t("placeholderSubtask")}
                   value={newStepText}
                   onChange={(e) => setNewStepText(e.target.value)}
                   onKeyDown={(e) => {
@@ -722,7 +722,7 @@ function TasksPage() {
                   type="number"
                   min="5"
                   step="5"
-                  placeholder="مثال: 45 دقيقة"
+                  placeholder={t("placeholderEstMinutes")}
                   className="pop-input"
                   value={draft.estimatedMinutes}
                   onChange={(e) =>

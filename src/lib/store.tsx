@@ -70,6 +70,7 @@ export type TimerSettings = {
 
 type State = {
   lang: Lang;
+  studentName: string;
   sessions: Session[];
   tasks: Task[];
   dailyPlans: DailyPlanItem[];
@@ -79,7 +80,7 @@ type State = {
   timerSettings: TimerSettings;
 };
 
-const KEY = "zaker-state-v3";
+const KEY = "zaker-state-v4";
 
 const defaultTimerSettings: TimerSettings = {
   focusMinutes: 25,
@@ -91,6 +92,7 @@ const defaultTimerSettings: TimerSettings = {
 
 const initial: State = {
   lang: "ar",
+  studentName: "",
   sessions: [],
   tasks: [],
   dailyPlans: [],
@@ -104,6 +106,7 @@ type Ctx = State & {
   ready: boolean;
   t: (k: Key) => string;
   setLang: (l: Lang) => void;
+  setStudentName: (name: string) => void;
   setSoundEnabled: (v: boolean) => void;
   updateTimerSettings: (settings: Partial<TimerSettings>) => void;
   // Sessions
@@ -126,6 +129,7 @@ type Ctx = State & {
   // Computed helpers
   allSubjects: string[];
   todayPlan: DailyPlanItem[];
+  todayTasks: Task[];
   subjectStatsToday: Record<string, number>;
   subjectStatsWeek: Record<string, number>;
   studyStreak: number;
@@ -154,6 +158,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     try {
       const raw =
         localStorage.getItem(KEY) ||
+        localStorage.getItem("zaker-state-v3") ||
         localStorage.getItem("zaker-state-v2") ||
         localStorage.getItem("zaker-state-v1");
       if (raw) {
@@ -161,6 +166,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setState({
           ...initial,
           ...parsed,
+          studentName: parsed.studentName || "",
           tasks: (parsed.tasks || []).map((tk: Task) => ({
             ...tk,
             subtasks: tk.subtasks || [],
@@ -231,6 +237,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return state.dailyPlans.filter((p) => p.date === currentTodayKey);
   }, [state.dailyPlans, currentTodayKey]);
 
+  // Derived: Today's tasks (tasks due today)
+  const todayTasks = useMemo(() => {
+    return state.tasks.filter((tk) => {
+      if (!tk.due) return false;
+      return tk.due.slice(0, 10) === currentTodayKey;
+    });
+  }, [state.tasks, currentTodayKey]);
+
   // Derived: Subject focus stats for Today
   const subjectStatsToday = useMemo(() => {
     const map: Record<string, number> = {};
@@ -296,6 +310,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     ready,
     t,
     setLang: (lang) => setState((s) => ({ ...s, lang })),
+    setStudentName: (studentName) => setState((s) => ({ ...s, studentName: studentName.trim() })),
     setSoundEnabled: (v) => setState((s) => ({ ...s, soundEnabled: v })),
     updateTimerSettings: (newSettings) =>
       setState((s) => ({
@@ -441,15 +456,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         });
 
         if (!newItems.length) {
-          toast.info(st.lang === "ar" ? "المواد موجودة بالفعل في خطة اليوم" : "Subjects are already in today's plan");
+          const msg =
+            st.lang === "ar"
+              ? "المواد موجودة بالفعل في خطة اليوم"
+              : st.lang === "el"
+              ? "Τα μαθήματα υπάρχουν ήδη στο σημερινό πλάνο"
+              : "Subjects are already in today's plan";
+          toast.info(msg);
           return st;
         }
 
-        toast.success(
+        const msg =
           st.lang === "ar"
             ? `تم استيراد ${newItems.length} مواد إلى خطة اليوم بنجاح!`
-            : `Imported ${newItems.length} subjects to today's plan!`,
-        );
+            : st.lang === "el"
+            ? `Εισήχθησαν ${newItems.length} μαθήματα στο σημερινό πλάνο!`
+            : `Imported ${newItems.length} subjects to today's plan!`;
+        toast.success(msg);
         return { ...st, dailyPlans: [...st.dailyPlans, ...newItems] };
       });
     },
@@ -479,6 +502,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     allSubjects,
     todayPlan,
+    todayTasks,
     subjectStatsToday,
     subjectStatsWeek,
     studyStreak,

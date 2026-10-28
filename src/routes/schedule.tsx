@@ -40,7 +40,7 @@ function SchedulePage() {
       <div className="print-only mb-6 border-b-2 border-black pb-4 text-center">
         <h1 className="text-3xl font-black">📚 {t("appName")} — {t("navSchedule")}</h1>
         <p className="mt-1 text-sm font-bold text-gray-700">
-          جدول المذاكرة الأسبوعي
+          {t("weeklyTimetable")}
         </p>
       </div>
 
@@ -127,7 +127,7 @@ function SchedulePage() {
               <input
                 autoFocus
                 className="pop-input mt-1"
-                placeholder="اسم المادة..."
+                placeholder={t("placeholderSubject")}
                 value={draft.subject}
                 onChange={(e) =>
                   setDraft({ ...draft, subject: e.target.value })

@@ -34,7 +34,7 @@ const dict = {
   save: { ar: "حفظ", en: "Save", el: "Αποθήκευση" },
   cancel: { ar: "إلغاء", en: "Cancel", el: "Άκυρο" },
   delete: { ar: "حذف", en: "Delete", el: "Διαγραφή" },
-  addTask: { ar: "إضافة مهمة متطورة", en: "Add task", el: "Νέα εργασία" },
+  addTask: { ar: "إضافة مهمة", en: "Add task", el: "Νέα εργασία" },
   taskTitle: { ar: "عنوان المهمة", en: "Task title", el: "Τίτλος εργασίας" },
   dueDate: { ar: "موعد التسليم", en: "Due", el: "Προθεσμία" },
   remind: { ar: "تذكير قبل", en: "Remind me", el: "Υπενθύμιση" },
@@ -58,7 +58,7 @@ const dict = {
   longBreak: { ar: "استراحة طويلة", en: "Long break", el: "Μεγάλο διάλειμμα" },
   start: { ar: "ابدأ", en: "Start", el: "Έναρξη" },
   pause: { ar: "إيقاف", en: "Pause", el: "Παύση" },
-  reset: { ar: "إعادة", en: "Reset", el: "Επαناφορά" },
+  reset: { ar: "إعادة", en: "Reset", el: "Επαναφορά" },
   focusDone: { ar: "انتهت جلسة التركيز! خذ استراحة 🎉", en: "Focus done! Take a break 🎉", el: "Τέλος εστίασης! Κάνε διάλειμμα 🎉" },
   breakDone: { ar: "انتهت الاستراحة، يلا نكمل 💪", en: "Break over, let's go 💪", el: "Τέλος διαλείμματος, πάμε 💪" },
   sessionsToday: { ar: "جلسات اليوم", en: "Sessions today", el: "Συνεδρίες σήμερα" },
@@ -68,9 +68,18 @@ const dict = {
     en: "Your data is saved on this device only",
     el: "Τα δεδομένα σου αποθηκεύονται μόνο σε αυτή τη συσκευή",
   },
-  seeAll: { ar: "عرض الكل", en: "See all", el: "Όلا" },
+  seeAll: { ar: "عرض الكل", en: "See all", el: "Όλα" },
 
-  // Daily plan & productivity
+  // Student Profile & Onboarding
+  welcomeStudent: { ar: "مرحباً بك في ذاكِر!", en: "Welcome to Zaker!", el: "Καλώς ήρθατε στο Zaker!" },
+  whatIsYourName: { ar: "ما اسمك يا بطل؟", en: "What is your name?", el: "Ποιο είναι το όνομά σου;" },
+  namePlaceholder: { ar: "اكتب اسمك هنا...", en: "Type your name here...", el: "Γράψε το όνομά σου εδώ..." },
+  startJourney: { ar: "ابدأ رحلة التفوق 🚀", en: "Start Your Journey 🚀", el: "Ξεκινήστε το ταξίδι σας 🚀" },
+  studentName: { ar: "اسم الطالب", en: "Student Name", el: "Όνομα μαθητή" },
+  editName: { ar: "تعديل الاسم", en: "Edit Name", el: "Επεξεργασία ονόματος" },
+  enterYourName: { ar: "أدخل اسمك لتخصيص التطبيق", en: "Enter your name to personalize the app", el: "Εισάγετε το όνομά σας" },
+
+  // Daily plan & combined progress
   dailyPlan: { ar: "خطة مذاكرة اليوم", en: "Today's Study Plan", el: "Ημερήσιο Πλάνο Μελέτης" },
   dailyPlanSubtitle: {
     ar: "رتّب المواد التي ستذاكرها اليوم وحدد وقتاً مستهدفاً لكل مادة",
@@ -80,7 +89,7 @@ const dict = {
   addSubjectPlan: { ar: "إضافة مادة للخطة", en: "Add subject to plan", el: "Προσθήκη μαθήματος" },
   targetMinutes: { ar: "الوقت المستهدف (دقيقة)", en: "Target time (min)", el: "Στόχος (λεπτά)" },
   taskNotes: { ar: "المهام أو الدروس المحددة", en: "Tasks / Specific topics", el: "Εργασίες / Συγκεκριμένα θέματα" },
-  studyProgress: { ar: "إنجاز مذاكرة اليوم", en: "Today's Study Progress", el: "Πρόοδος σημερινού διαβάσματος" },
+  studyProgress: { ar: "إنجاز أهداف اليوم", en: "Today's Overall Achievement", el: "Σημερινά Επιτεύγματα" },
   startStudying: { ar: "ابدأ المذاكرة بالمؤقت", en: "Start timer on this", el: "Έναρξη μελέτης με χρονόμετρο" },
   importSchedule: { ar: "نسخ مواد الجدول لليوم", en: "Import from schedule", el: "Εισαγωγή από πρόγραμμα" },
   noPlanYet: {
@@ -89,9 +98,9 @@ const dict = {
     el: "Δεν έχεις ορίσει πλάνο για σήμερα! Πρόσθεσε μαθήματα τώρα 💡",
   },
   allPlannedDone: {
-    ar: "أنت بطل! أكملت جميع مواد خطة اليوم بنجاح 🎯🎉",
-    en: "Champion! You completed all planned subjects for today 🎯🎉",
-    el: "Μπράβο! Ολοκλήρωσες όλα τα προγραμματισμένα μαθήματα σήμερα 🎯🎉",
+    ar: "أنت بطل! حققت أهداف اليوم بنجاح 🎯🎉",
+    en: "Champion! You completed today's study goals successfully 🎯🎉",
+    el: "Μπράβο! Ολοκλήρωσες τους σημερινούς στόχους με επιτυχία 🎯🎉",
   },
   studyStreak: { ar: "شعلة الالتزام", en: "Study Streak", el: "Σερί Μελέτης" },
   streakDays: { ar: "أيام متتالية", en: "days streak", el: "συνεχόμενες ημέρες" },
@@ -125,6 +134,13 @@ const dict = {
   totalTarget: { ar: "المستهدف الإجمالي", en: "Total Target", el: "Συνολικός στόχος" },
   totalAchieved: { ar: "المحقق فعلياً", en: "Total Studied", el: "Πραγματοποιήθηκε" },
 
+  // Combined Daily Achievement
+  dailyTasksSection: { ar: "مهام مطلوب تسليمها اليوم", en: "Tasks Due Today", el: "Εργασίες για παράδοση σήμερα" },
+  subjectsAchievement: { ar: "مواد الخطة", en: "Study Subjects", el: "Μαθήματα Πλάνου" },
+  tasksAchievement: { ar: "المهام اليومية", en: "Daily Tasks", el: "Ημερήσιες Εργασίες" },
+  allGoalsDone: { ar: "أنجزت جميع المواد والمهام المحددة لليوم! 🏆", en: "All subjects and tasks completed for today! 🏆", el: "Όλα τα μαθήματα και οι εργασίες ολοκληρώθηκαν σήμερα! 🏆" },
+  goalsCount: { ar: "أهداف منجزة", en: "goals done", el: "στόχοι ολοκληρώθηκαν" },
+
   // Advanced Tasks
   description: { ar: "تفاصيل / ملاحظات", en: "Description / Notes", el: "Περιγραφή / Σημειώσεις" },
   subtasks: { ar: "الخطوات والمهام الفرعية", en: "Subtasks / Steps", el: "Υποεργασίες / Βήματα" },
@@ -141,6 +157,41 @@ const dict = {
   focusOnTask: { ar: "ركّز على هذه المهمة ⏱️", en: "Focus on this task ⏱️", el: "Εστίαση στην εργασία ⏱️" },
   filterByTag: { ar: "تصفية بالتصنيف", en: "Filter by tag", el: "Φίλτρο ετικέτας" },
   stepsDone: { ar: "خطوات مكتملة", en: "steps completed", el: "βήματα ολοκληρώθηκαν" },
+  taskSubtitle: {
+    ar: "نظّم تفاصيل واجباتك، مشاريعك، ومواعيد تسليمك بدقة",
+    en: "Organize homework, projects, and deadlines with precision",
+    el: "Οργανώστε εργασίες, projects και προθεσμίες με ακρίβεια",
+  },
+  placeholderTaskTitle: {
+    ar: "مثلاً: حل تدريبات الحركة في خط مستقيم...",
+    en: "e.g. Solve physics chapter 2 exercises...",
+    el: "π.χ. Λύση ασκήσεων φυσικής κεφαλαίου 2...",
+  },
+  placeholderSubject: {
+    ar: "فيزياء، رياضيات، كيمياء...",
+    en: "Physics, Math, Chemistry...",
+    el: "Φυσική, Μαθηματικά, Χημεία...",
+  },
+  placeholderDescription: {
+    ar: "صفحات الكتاب، تفاصيل المسائل، روابط أو ملاحظات إضافية...",
+    en: "Book pages, problem details, links or extra notes...",
+    el: "Σελίδες βιβλίου, λεπτομέρειες, σύνδεσμοι ή σημειώσεις...",
+  },
+  placeholderSubtask: {
+    ar: "خطوة أو مرحلة في المهمة...",
+    en: "Step or milestone in task...",
+    el: "Βήμα ή στάδιο στην εργασία...",
+  },
+  placeholderEstMinutes: {
+    ar: "مثال: 45 دقيقة",
+    en: "e.g. 45 min",
+    el: "π.χ. 45 λεπ.",
+  },
+  quickAddStep: {
+    ar: "+ إضافة خطوة فرعية سريعة...",
+    en: "+ Add quick step...",
+    el: "+ Γρήγορη προσθήκη βήματος...",
+  },
 
   // Advanced Timer Controls
   timerSettings: { ar: "تخصيص أوقات المؤقت", en: "Timer Settings", el: "Ρυθμίσεις χρονομέτρου" },
@@ -155,11 +206,37 @@ const dict = {
   autoStart: { ar: "الانتقال التلقائي للاستراحة", en: "Auto-start breaks", el: "Αυτόματη έναρξη διαλείμματος" },
   selectTask: { ar: "ربط بمهمة محددة", en: "Link to a task", el: "Σύνδεση με εργασία" },
   linkedTask: { ar: "المهمة المرتبطة", en: "Linked Task", el: "Συνδεδεμένη εργασία" },
-  quickDurations: { ar: "أوقات سريعة", en: "Quick times", el: "Γρήγοροι χρόνοι" },
+  timerSubtitle: {
+    ar: "تحكم كامل في مدة الجلسات والاستراحات",
+    en: "Full control over focus sessions and breaks",
+    el: "Πλήρης έλεγχος των συνεδριών και διαλειμμάτων",
+  },
+  currentSubjectLabel: { ar: "المادة الحالية:", en: "Current subject:", el: "Τρέχον μάθημα:" },
+  studiedTodayLabel: { ar: "أنجزت فيها اليوم:", en: "Studied today:", el: "Μελετήθηκε σήμερα:" },
+  noTaskSelected: { ar: "بدون مهمة محددة", en: "No specific task linked", el: "Χωρίς συγκεκριμένη εργασία" },
+  addAnotherSubject: { ar: "➕ إضافة مادة أخرى...", en: "➕ Add other subject...", el: "➕ Προσθήκη άλλου μαθήματος..." },
+  customSubjectName: { ar: "اسم المادة...", en: "Subject name...", el: "Όνομα μαθήματος..." },
+  weeklyTimetable: { ar: "جدول المذاكرة الأسبوعي", en: "Weekly Study Schedule", el: "Εβδομαδιαίο Πρόγραμμα Μελέτης" },
+  placeholderPlanSubject: { ar: "مثال: رياضيات، فيزياء، لغة عربية...", en: "e.g. Math, Physics, English...", el: "π.χ. Μαθηματικά, Φυσική..." },
+  placeholderPlanNotes: { ar: "مثال: حل صفحة 45، تلخيص الفصل الثاني...", en: "e.g. Solve page 45, summarize chapter 2...", el: "π.χ. Λύση σελίδας 45..." },
 } as const;
 
 export type Key = keyof typeof dict;
 export const translate = (lang: Lang, key: Key) => dict[key][lang];
+
+export function getGreeting(lang: Lang, name?: string): string {
+  const trimmed = name?.trim();
+  if (!trimmed) {
+    return dict.hello[lang];
+  }
+  if (lang === "ar") {
+    return `أهلاً يا ${trimmed}! جاهز تذاكر؟`;
+  }
+  if (lang === "el") {
+    return `Γεια σου ${trimmed}! Έτοιμος για διάβασμα;`;
+  }
+  return `Hey ${trimmed}! Ready to study?`;
+}
 
 const days = {
   ar: ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"],

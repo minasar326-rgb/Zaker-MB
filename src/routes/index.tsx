@@ -6,22 +6,25 @@ import {
   CheckCircle2,
   Clock,
   Download,
+  Edit3,
   Flame,
+  ListCheck,
   Play,
   Plus,
   Printer,
   Sparkles,
   Trash2,
+  User,
+  X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { colorBg } from "@/components/Shell";
-import { dayName } from "@/lib/i18n";
+import { dayName, getGreeting } from "@/lib/i18n";
 import {
   COLORS,
   todayKey,
   useStore,
   type Color,
-  type DailyPlanItem,
 } from "@/lib/store";
 
 export const Route = createFileRoute("/")({
@@ -40,11 +43,14 @@ function Index() {
   const {
     t,
     lang,
+    studentName,
+    setStudentName,
     sessions,
     tasks,
     focusLog,
     toggleTask,
     todayPlan,
+    todayTasks,
     savePlanItem,
     togglePlanItem,
     deletePlanItem,
@@ -52,6 +58,7 @@ function Index() {
     studyStreak,
     allSubjects,
     subjectStatsToday,
+    ready,
   } = useStore();
 
   const navigate = useNavigate();
@@ -59,10 +66,21 @@ function Index() {
   const [perm, setPerm] = useState<string>("default");
   const [planDraft, setPlanDraft] = useState<PlanDraft | null>(null);
 
+  // Student name modal
+  const [nameModalOpen, setNameModalOpen] = useState(false);
+  const [tempName, setTempName] = useState("");
+
   useEffect(() => {
     setToday(new Date().getDay());
     if ("Notification" in window) setPerm(Notification.permission);
   }, []);
+
+  // Show onboarding name modal on first visit
+  useEffect(() => {
+    if (ready && !studentName) {
+      setNameModalOpen(true);
+    }
+  }, [ready, studentName]);
 
   const todays = sessions
     .filter((s) => s.day === today)
@@ -71,13 +89,22 @@ function Index() {
   const upcoming = [...pending]
     .sort((a, b) => (a.due ?? "9").localeCompare(b.due ?? "9"))
     .slice(0, 5);
-  const doneCount = tasks.length - pending.length;
 
-  // Daily plan calculations
-  const totalPlanned = todayPlan.length;
-  const completedPlanned = todayPlan.filter((p) => p.done).length;
-  const planProgressPct =
-    totalPlanned > 0 ? Math.round((completedPlanned / totalPlanned) * 100) : 0;
+  // Daily plan calculations (Subjects)
+  const totalPlannedSubjects = todayPlan.length;
+  const completedSubjects = todayPlan.filter((p) => p.done).length;
+
+  // Daily tasks calculations (Tasks due today)
+  const totalTodayTasks = todayTasks.length;
+  const completedTodayTasks = todayTasks.filter((tk) => tk.done).length;
+
+  // Combined overall daily goals achievement (Subjects + Tasks)
+  const overallTotalGoals = totalPlannedSubjects + totalTodayTasks;
+  const overallCompletedGoals = completedSubjects + completedTodayTasks;
+  const overallProgressPct =
+    overallTotalGoals > 0
+      ? Math.round((overallCompletedGoals / overallTotalGoals) * 100)
+      : 0;
 
   const totalTargetMins = todayPlan.reduce((acc, p) => acc + p.targetMinutes, 0);
   const totalAchievedMins = Object.values(subjectStatsToday).reduce(
@@ -98,12 +125,23 @@ function Index() {
     window.print();
   };
 
+  const handleSaveName = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (tempName.trim()) {
+      setStudentName(tempName.trim());
+      setNameModalOpen(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Printable Header (Visible only when printing) */}
+      {/* Printable Header */}
       <div className="print-only mb-6 border-b-2 border-black pb-4 text-center">
-        <h1 className="text-3xl font-black">📚 {t("appName")} — {t("dailyPlan")}</h1>
+        <h1 className="text-3xl font-black">
+          📚 {t("appName")} — {t("dailyPlan")}
+        </h1>
         <p className="mt-1 text-sm font-bold text-gray-700">
+          {studentName ? `${t("studentName")}: ${studentName} · ` : ""}
           {dayName(lang, today)} · {todayKey()}
         </p>
       </div>
@@ -123,17 +161,46 @@ function Index() {
             {dayName(lang, today)} · {todayKey()}
           </p>
 
-          {/* Study Streak Badge */}
-          <div className="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-sun px-3.5 py-1 text-sm font-extrabold shadow-[var(--shadow-pop-sm)]">
-            <Flame className="size-5 text-orange-600 animate-bounce" />
-            <span>
-              {studyStreak} {t("streakDays")}
-            </span>
+          <div className="flex items-center gap-2">
+            {/* Student Name badge with edit button */}
+            {studentName ? (
+              <button
+                onClick={() => {
+                  setTempName(studentName);
+                  setNameModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 rounded-full border-2 border-foreground bg-card px-3 py-1 text-xs font-black shadow-[var(--shadow-pop-sm)] hover:bg-muted transition"
+                title={t("editName")}
+              >
+                <User className="size-3.5 text-primary" />
+                <span>{studentName}</span>
+                <Edit3 className="size-3 text-muted-foreground ms-0.5" />
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setTempName("");
+                  setNameModalOpen(true);
+                }}
+                className="pop-btn bg-card text-xs py-1 px-3"
+              >
+                + {t("studentName")}
+              </button>
+            )}
+
+            {/* Study Streak Badge */}
+            <div className="inline-flex items-center gap-1.5 rounded-full border-2 border-foreground bg-sun px-3.5 py-1 text-sm font-extrabold shadow-[var(--shadow-pop-sm)]">
+              <Flame className="size-5 text-orange-600 animate-bounce" />
+              <span>
+                {studyStreak} {t("streakDays")}
+              </span>
+            </div>
           </div>
         </div>
 
+        {/* Personalized Greeting with Student Name */}
         <h1 className="relative mt-2 text-3xl md:text-5xl font-black">
-          {t("hello")}
+          {getGreeting(lang, studentName)}
         </h1>
         <p className="relative mt-2 max-w-md text-secondary-foreground/85 font-medium">
           {studyStreak > 0 ? t("streakAwesome") : t("streakStart")}
@@ -172,7 +239,7 @@ function Index() {
 
         <div className="pop-card bg-mint p-4">
           <p className="font-display text-3xl font-black text-foreground">
-            {completedPlanned}/{totalPlanned}
+            {overallCompletedGoals}/{overallTotalGoals}
           </p>
           <p className="text-xs font-bold text-muted-foreground mt-0.5">{t("studyProgress")}</p>
         </div>
@@ -185,7 +252,7 @@ function Index() {
         </div>
       </section>
 
-      {/* 1. Multi-Subject Daily Study Plan (خطة مذاكرة اليوم) */}
+      {/* 1. Multi-Subject Daily Study Plan & Combined Daily Goals */}
       <section className="pop-card p-5 md:p-6 bg-card">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
@@ -229,27 +296,43 @@ function Index() {
           </div>
         </div>
 
-        {/* Progress Bar for the day */}
-        {totalPlanned > 0 && (
+        {/* Combined Overall Daily Progress Bar (Subjects + Tasks) */}
+        {overallTotalGoals > 0 && (
           <div className="mb-5 rounded-2xl border-2 border-foreground bg-muted p-4">
-            <div className="flex items-center justify-between text-sm font-black mb-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-black mb-2">
               <span className="flex items-center gap-1.5">
                 <Sparkles className="size-4 text-primary" />
-                {t("studyProgress")}: {completedPlanned} / {totalPlanned} ({planProgressPct}%)
+                {t("studyProgress")}: {overallCompletedGoals} / {overallTotalGoals} ({overallProgressPct}%)
               </span>
               <span className="text-xs text-muted-foreground font-bold">
                 {totalAchievedMins} / {totalTargetMins} {t("min")}
               </span>
             </div>
+
+            {/* Overall Progress meter */}
             <div className="h-4 w-full overflow-hidden rounded-full border-2 border-foreground bg-card">
               <div
                 className="h-full bg-mint transition-all duration-500"
-                style={{ width: `${planProgressPct}%` }}
+                style={{ width: `${overallProgressPct}%` }}
               />
             </div>
-            {planProgressPct === 100 && (
-              <p className="mt-2 text-xs font-black text-emerald-700 text-center animate-bounce">
-                {t("allPlannedDone")}
+
+            {/* Achievement breakdown pills */}
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-bold">
+              <span className="inline-flex items-center gap-1 rounded-full border border-foreground/30 bg-card px-2.5 py-0.5">
+                📚 {t("subjectsAchievement")}: {completedSubjects} / {totalPlannedSubjects}
+              </span>
+
+              {totalTodayTasks > 0 && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-foreground/30 bg-card px-2.5 py-0.5">
+                  ✅ {t("tasksAchievement")}: {completedTodayTasks} / {totalTodayTasks}
+                </span>
+              )}
+            </div>
+
+            {overallProgressPct === 100 && (
+              <p className="mt-3 text-xs font-black text-emerald-700 text-center animate-bounce">
+                {t("allGoalsDone")}
               </p>
             )}
           </div>
@@ -344,7 +427,6 @@ function Index() {
                     </div>
                   </div>
 
-                  {/* Action button to jump to Timer with this subject */}
                   <div className="mt-4 pt-3 border-t border-foreground/20 flex items-center justify-between no-print">
                     <button
                       onClick={() =>
@@ -363,6 +445,72 @@ function Index() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* 2. Tasks Due Today section inside Daily Achievement */}
+        {todayTasks.length > 0 && (
+          <div className="mt-6 pt-5 border-t border-foreground/15">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-black flex items-center gap-2">
+                <ListCheck className="size-4 text-primary" />
+                <span>{t("dailyTasksSection")}</span>
+                <span className="text-xs bg-muted px-2 py-0.5 rounded-full border border-foreground/20">
+                  {completedTodayTasks}/{totalTodayTasks}
+                </span>
+              </h3>
+              <Link to="/tasks" className="text-xs font-bold text-primary hover:underline">
+                {t("seeAll")}
+              </Link>
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-2">
+              {todayTasks.map((tk) => (
+                <div
+                  key={tk.id}
+                  className={`flex items-center justify-between gap-2.5 rounded-xl border-2 border-foreground p-3 transition ${
+                    tk.done ? "bg-mint/40 opacity-70" : "bg-card"
+                  }`}
+                >
+                  <button
+                    onClick={() => toggleTask(tk.id)}
+                    className={`grid size-6 shrink-0 place-items-center rounded-md border-2 border-foreground transition ${
+                      tk.done ? "bg-primary text-primary-foreground" : "bg-card hover:bg-muted"
+                    }`}
+                  >
+                    {tk.done && <Check className="size-3.5 stroke-[3]" />}
+                  </button>
+
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`text-sm font-black truncate ${
+                        tk.done ? "line-through text-foreground/60" : "text-foreground"
+                      }`}
+                    >
+                      {tk.title}
+                    </p>
+                    {tk.subject && (
+                      <span className="text-[11px] font-bold text-muted-foreground">
+                        {tk.subject}
+                      </span>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() =>
+                      navigate({
+                        to: "/timer",
+                        search: { subject: tk.subject || tk.title, taskId: tk.id },
+                      })
+                    }
+                    className="p-1 text-primary hover:bg-muted rounded"
+                    title={t("focusOnTask")}
+                  >
+                    <Play className="size-3.5 fill-current" />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </section>
@@ -466,7 +614,7 @@ function Index() {
               <input
                 autoFocus
                 className="pop-input mt-1"
-                placeholder="مثال: رياضيات، فيزياء، لغة عربية..."
+                placeholder={t("placeholderPlanSubject")}
                 value={planDraft.subject}
                 onChange={(e) =>
                   setPlanDraft({ ...planDraft, subject: e.target.value })
@@ -517,7 +665,7 @@ function Index() {
               {t("taskNotes")}
               <input
                 className="pop-input mt-1"
-                placeholder="مثال: حل صفحة 45، تلخيص الفصل الثاني..."
+                placeholder={t("placeholderPlanNotes")}
                 value={planDraft.notes}
                 onChange={(e) =>
                   setPlanDraft({ ...planDraft, notes: e.target.value })
@@ -555,6 +703,62 @@ function Index() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Student Name Modal (First-time or Edit) */}
+      {nameModalOpen && (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-foreground/60 p-4"
+          onClick={() => {
+            if (studentName) setNameModalOpen(false);
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="pop-card w-full max-w-sm bg-card p-6 space-y-4 text-center animate-in fade-in zoom-in duration-200"
+          >
+            <div className="mx-auto grid size-16 place-items-center rounded-2xl border-2 border-foreground bg-sun text-3xl shadow-[var(--shadow-pop-sm)]">
+              🎓
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-black">{t("welcomeStudent")}</h2>
+              <p className="text-xs text-muted-foreground mt-1 font-bold">
+                {t("whatIsYourName")}
+              </p>
+            </div>
+
+            <form onSubmit={handleSaveName} className="space-y-3">
+              <input
+                autoFocus
+                required
+                type="text"
+                className="pop-input text-center text-lg font-black"
+                placeholder={t("namePlaceholder")}
+                value={tempName}
+                onChange={(e) => setTempName(e.target.value)}
+              />
+
+              <button
+                type="submit"
+                disabled={!tempName.trim()}
+                className="pop-btn bg-primary text-primary-foreground font-black text-sm w-full py-2.5 disabled:opacity-50"
+              >
+                {t("startJourney")}
+              </button>
+
+              {studentName && (
+                <button
+                  type="button"
+                  onClick={() => setNameModalOpen(false)}
+                  className="text-xs text-muted-foreground hover:text-foreground font-bold"
+                >
+                  {t("cancel")}
+                </button>
+              )}
+            </form>
+          </div>
         </div>
       )}
     </div>

@@ -234,7 +234,7 @@ function TimerPage() {
         <div>
           <h1 className="text-3xl font-black">{t("navTimer")}</h1>
           <p className="text-xs font-bold text-muted-foreground mt-0.5">
-            تحكم كامل في مدة الجلسات والاستراحات
+            {t("timerSubtitle")}
           </p>
         </div>
 
@@ -332,13 +332,13 @@ function TimerPage() {
                   📖 {s}
                 </option>
               ))}
-              <option value="__custom__">➕ إضافة مادة أخرى...</option>
+              <option value="__custom__">{t("addAnotherSubject")}</option>
             </select>
 
             {selectedSubject === "__custom__" && (
               <input
                 type="text"
-                placeholder="اسم المادة..."
+                placeholder={t("customSubjectName")}
                 value={customSubject}
                 onChange={(e) => setCustomSubject(e.target.value)}
                 disabled={running}
@@ -362,7 +362,7 @@ function TimerPage() {
               disabled={running}
               className="pop-input font-medium text-xs"
             >
-              <option value="">بدون مهمة محددة</option>
+              <option value="">{t("noTaskSelected")}</option>
               {activeTasks.map((tk) => (
                 <option key={tk.id} value={tk.id}>
                   📌 {tk.title} {tk.subject ? `(${tk.subject})` : ""}
@@ -434,28 +434,28 @@ function TimerPage() {
           <button
             onClick={() => adjustTime(-300)}
             className="pop-btn bg-card text-xs py-1 px-2.5"
-            title="-5 دقائق"
+            title={`-5 ${t("min")}`}
           >
             -5 {t("min")}
           </button>
           <button
             onClick={() => adjustTime(-60)}
             className="pop-btn bg-card text-xs py-1 px-2.5"
-            title="-1 دقيقة"
+            title={`-1 ${t("min")}`}
           >
             -1 {t("min")}
           </button>
           <button
             onClick={() => adjustTime(60)}
             className="pop-btn bg-card text-xs py-1 px-2.5"
-            title="+1 دقيقة"
+            title={`+1 ${t("min")}`}
           >
             +1 {t("min")}
           </button>
           <button
             onClick={() => adjustTime(300)}
             className="pop-btn bg-card text-xs py-1 px-2.5"
-            title="+5 دقائق"
+            title={`+5 ${t("min")}`}
           >
             +5 {t("min")}
           </button>
