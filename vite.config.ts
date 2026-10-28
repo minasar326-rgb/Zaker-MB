@@ -1,6 +1,7 @@
 import path from "node:path";
 import react from "@vitejs/plugin-react";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
+import { viteSingleFile } from "vite-plugin-singlefile";
 import { defineConfig } from "vite";
 
 // https://vite.dev/config/
@@ -11,6 +12,7 @@ export default defineConfig({
       autoCodeSplitting: true,
     }),
     react(),
+    viteSingleFile(),
   ],
   resolve: {
     alias: {

@@ -1,13 +1,26 @@
 import "./styles.css";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import { RouterProvider, createRouter } from "@tanstack/react-router";
+import {
+  RouterProvider,
+  createRouter,
+  createHashHistory,
+} from "@tanstack/react-router";
 
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
 
+// Hash history allows the app to work seamlessly even when opened directly via file://
+const hashHistory = createHashHistory();
+
 // Create a new router instance
-const router = createRouter({ routeTree });
+const router = createRouter({
+  routeTree,
+  history:
+    typeof window !== "undefined" && window.location.protocol === "file:"
+      ? hashHistory
+      : undefined,
+});
 
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {
@@ -19,7 +32,6 @@ declare module "@tanstack/react-router" {
 // Render the app
 const rootElement = document.getElementById("root");
 if (rootElement) {
-  // Clear any placeholder content
   rootElement.innerHTML = "";
   const root = ReactDOM.createRoot(rootElement);
   root.render(

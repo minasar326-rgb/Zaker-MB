@@ -9,30 +9,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
     <title>ذاكِر — Zaker</title>
     <script>
-      // إذا فتح المستخدم ملف index.html مباشرة من الفولدر
-      if (window.location.protocol === 'file:') {
-        window.location.replace('http://localhost:5180');
+      // إذا تم النقر المزدوج على هذا الملف مباشرة من الفولدر بدون سيرفر، يفتح النسخة الكاملة الجاهزة فوراً
+      if (window.location.protocol === 'file:' && !window.location.pathname.endsWith('Zaker.html')) {
+        window.location.replace('Zaker.html');
       }
     </script>
   </head>
   <body>
-    <div id="file-protocol-helper" style="display: none; font-family: Cairo, system-ui, sans-serif; text-align: center; padding: 40px 24px; max-width: 480px; margin: 50px auto; border: 2px solid #221c35; border-radius: 20px; box-shadow: 4px 4px 0 #221c35; background: #fff;">
-      <span style="font-size: 48px;">📚</span>
-      <h2 style="font-size: 24px; font-weight: 900; margin: 15px 0 10px; color: #221c35;">تطبيق ذاكِر (Zaker)</h2>
-      <p style="color: #666; font-size: 14px; margin-bottom: 25px; line-height: 1.6;">
-        جاري تحويلك إلى التطبيق... إذا لم يفتح تلقائياً، اضغط على الزر أدناه:
-      </p>
-      <a href="http://localhost:5180" style="display: inline-block; background: #f26430; color: #fff; font-weight: 800; text-decoration: none; padding: 12px 28px; border-radius: 999px; border: 2px solid #221c35; box-shadow: 2px 2px 0 #221c35; font-size: 15px;">
-        فتح التطبيق (http://localhost:5180) 🚀
-      </a>
+    <div id="root">
+      <div style="font-family: Cairo, system-ui, sans-serif; text-align: center; padding: 40px; max-width: 480px; margin: 40px auto; border: 2px solid #221c35; border-radius: 20px; box-shadow: 4px 4px 0 #221c35; background: #fff;">
+        <span style="font-size: 48px;">📚</span>
+        <h2 style="font-size: 24px; font-weight: 900; margin: 15px 0 10px;">تطبيق ذاكِر (Zaker)</h2>
+        <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+          جاري فتح النسخة الجاهزة للتشغيل المباشر...
+        </p>
+        <a href="Zaker.html" style="display: inline-block; background: #f26430; color: #fff; font-weight: 800; text-decoration: none; padding: 12px 28px; border-radius: 999px; border: 2px solid #221c35; box-shadow: 2px 2px 0 #221c35; font-size: 15px;">
+          اضغط هنا لفتح التطبيق مباشرة 🚀
+        </a>
+      </div>
     </div>
-    <script>
-      if (window.location.protocol === 'file:') {
-        document.getElementById('file-protocol-helper').style.display = 'block';
-      }
-    </script>
-
-    <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
