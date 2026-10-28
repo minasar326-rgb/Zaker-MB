@@ -32,6 +32,7 @@ export type Task = {
   description?: string | undefined;
   subject?: string | undefined;
   due?: string | undefined;
+  completedDate?: string | undefined;
   remindMin: number;
   priority: Priority;
   tag?: TaskTag | undefined;
@@ -237,11 +238,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return state.dailyPlans.filter((p) => p.date === currentTodayKey);
   }, [state.dailyPlans, currentTodayKey]);
 
-  // Derived: Today's tasks (tasks due today)
+  // Derived: Today's tasks (completed today, due today, or active tasks)
   const todayTasks = useMemo(() => {
     return state.tasks.filter((tk) => {
-      if (!tk.due) return false;
-      return tk.due.slice(0, 10) === currentTodayKey;
+      // Completed today
+      if (tk.done && tk.completedDate === currentTodayKey) return true;
+      // Explicitly due today
+      if (tk.due && tk.due.slice(0, 10) === currentTodayKey) return true;
+      // Active tasks without a future due date (active backlog for today)
+      if (!tk.done) {
+        if (!tk.due) return true;
+        const dueDate = tk.due.slice(0, 10);
+        if (dueDate <= currentTodayKey) return true;
+      }
+      return false;
     });
   }, [state.tasks, currentTodayKey]);
 
@@ -279,7 +289,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (p.done) activeDates.add(p.date);
     });
     state.tasks.forEach((t) => {
-      if (t.done && t.due) activeDates.add(t.due.slice(0, 10));
+      if (t.done) {
+        if (t.completedDate) activeDates.add(t.completedDate);
+        else if (t.due) activeDates.add(t.due.slice(0, 10));
+      }
     });
 
     const todayStr = currentTodayKey;
@@ -330,38 +343,58 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     // Tasks
     saveTask: (tk) =>
-      setState((st) => ({
-        ...st,
-        tasks: tk.id
-          ? st.tasks.map((x) =>
-              x.id === tk.id
-                ? {
-                    ...x,
-                    ...tk,
-                    subtasks: tk.subtasks ?? x.subtasks ?? [],
-                    reminded: false,
-                  }
-                : x,
-            )
-          : [
-              {
-                ...tk,
-                id: uid(),
-                done: tk.done ?? false,
-                subtasks: tk.subtasks ?? [],
-              },
-              ...st.tasks,
-            ],
-      })),
+      setState((st) => {
+        const todayStr = todayKey();
+        return {
+          ...st,
+          tasks: tk.id
+            ? st.tasks.map((x) =>
+                x.id === tk.id
+                  ? {
+                      ...x,
+                      ...tk,
+                      completedDate:
+                        tk.done !== undefined
+                          ? tk.done
+                            ? (x.completedDate ?? todayStr)
+                            : undefined
+                          : x.completedDate,
+                      subtasks: tk.subtasks ?? x.subtasks ?? [],
+                      reminded: false,
+                    }
+                  : x,
+              )
+            : [
+                {
+                  ...tk,
+                  id: uid(),
+                  done: tk.done ?? false,
+                  completedDate: tk.done ? todayStr : undefined,
+                  subtasks: tk.subtasks ?? [],
+                },
+                ...st.tasks,
+              ],
+        };
+      }),
     toggleTask: (id) =>
       setState((st) => {
         const item = st.tasks.find((x) => x.id === id);
-        if (item && !item.done && st.soundEnabled) {
+        const willBeDone = item ? !item.done : false;
+        if (willBeDone && st.soundEnabled) {
           playChime("focus");
         }
+        const todayStr = todayKey();
         return {
           ...st,
-          tasks: st.tasks.map((x) => (x.id === id ? { ...x, done: !x.done } : x)),
+          tasks: st.tasks.map((x) =>
+            x.id === id
+              ? {
+                  ...x,
+                  done: willBeDone,
+                  completedDate: willBeDone ? todayStr : undefined,
+                }
+              : x,
+          ),
         };
       }),
     deleteTask: (id) => setState((st) => ({ ...st, tasks: st.tasks.filter((x) => x.id !== id) })),

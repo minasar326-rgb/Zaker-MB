@@ -135,11 +135,32 @@ const dict = {
   totalAchieved: { ar: "المحقق فعلياً", en: "Total Studied", el: "Πραγματοποιήθηκε" },
 
   // Combined Daily Achievement
-  dailyTasksSection: { ar: "مهام مطلوب تسليمها اليوم", en: "Tasks Due Today", el: "Εργασίες για παράδοση σήμερα" },
-  subjectsAchievement: { ar: "مواد الخطة", en: "Study Subjects", el: "Μαθήματα Πλάνου" },
-  tasksAchievement: { ar: "المهام اليومية", en: "Daily Tasks", el: "Ημερήσιες Εργασίες" },
-  allGoalsDone: { ar: "أنجزت جميع المواد والمهام المحددة لليوم! 🏆", en: "All subjects and tasks completed for today! 🏆", el: "Όλα τα μαθήματα και οι εργασίες ολοκληρώθηκαν σήμερα! 🏆" },
+  dailyOverviewTitle: { ar: "إنجاز اليوم (المذاكرة + المهام)", en: "Today's Achievement (Study + Tasks)", el: "Σημερινά Επιτεύγματα (Μελέτη + Εργασίες)" },
+  studySectionTitle: { ar: "📚 مذاكرة المواد", en: "📚 Study Subjects", el: "📚 Μαθήματα Μελέτης" },
+  tasksSectionTitle: { ar: "✅ المهام والواجبات", en: "✅ Tasks & Assignments", el: "✅ Εργασίες & Καθήκοντα" },
+  addQuickTaskToday: { ar: "إضافة مهمة لليوم", en: "Add task for today", el: "Προσθήκη εργασίας για σήμερα" },
+  noTasksYetToday: { ar: "لا توجد مهام لليوم، أضف مهمة جديدة أو استمتع بيومك!", en: "No tasks for today! Add a task or enjoy your day!", el: "Δεν υπάρχουν εργασίες για σήμερα!" },
+  totalDayProgress: { ar: "إجمالي إنجاز اليوم (المذاكرة + المهام)", en: "Overall Achievement (Study + Tasks)", el: "Συνολικό Επίτευγμα (Μελέτη + Εργασίες)" },
+  dailyTasksSection: { ar: "مهام اليوم", en: "Today's Tasks", el: "Σημερινές εργασίες" },
+  subjectsAchievement: { ar: "المذاكرة", en: "Study Subjects", el: "Μαθήματα" },
+  tasksAchievement: { ar: "المهام", en: "Tasks", el: "Εργασίες" },
+  allGoalsDone: { ar: "أنت أسطورة! أنجزت كل المذاكرة وجميع المهام المحددة لليوم! 🏆🎉", en: "Legendary! You completed all study sessions and all tasks for today! 🏆🎉", el: "Απίστευτο! Ολοκλήρωσες όλο το διάβασμα και όλες τις εργασίες σήμερα! 🏆🎉" },
   goalsCount: { ar: "أهداف منجزة", en: "goals done", el: "στόχοι ολοκληρώθηκαν" },
+  quickTaskPlaceholder: {
+    ar: "اكتب مهمة أو واجباً جديداً لليوم...",
+    en: "Type a task or homework for today...",
+    el: "Πληκτρολογήστε νέα εργασία για σήμερα...",
+  },
+  completedTodayBadge: {
+    ar: "تم إنجازها اليوم ✓",
+    en: "Completed today ✓",
+    el: "Ολοκληρώθηκε σήμερα ✓",
+  },
+  pendingTodayBadge: {
+    ar: "مطلوبة اليوم",
+    en: "Due today",
+    el: "Για σήμερα",
+  },
 
   // Advanced Tasks
   description: { ar: "تفاصيل / ملاحظات", en: "Description / Notes", el: "Περιγραφή / Σημειώσεις" },

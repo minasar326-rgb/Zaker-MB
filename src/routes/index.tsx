@@ -48,6 +48,7 @@ function Index() {
     sessions,
     tasks,
     focusLog,
+    saveTask,
     toggleTask,
     todayPlan,
     todayTasks,
@@ -69,6 +70,24 @@ function Index() {
   // Student name modal
   const [nameModalOpen, setNameModalOpen] = useState(false);
   const [tempName, setTempName] = useState("");
+
+  // Quick task state for Today's Achievement
+  const [quickTaskTitle, setQuickTaskTitle] = useState("");
+  const [quickTaskSubject, setQuickTaskSubject] = useState("");
+
+  const handleAddQuickTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickTaskTitle.trim()) return;
+    saveTask({
+      title: quickTaskTitle.trim(),
+      subject: quickTaskSubject.trim() || undefined,
+      due: todayKey(),
+      remindMin: 15,
+      priority: "med",
+      done: false,
+    });
+    setQuickTaskTitle("");
+  };
 
   useEffect(() => {
     setToday(new Date().getDay());
@@ -241,7 +260,7 @@ function Index() {
           <p className="font-display text-3xl font-black text-foreground">
             {overallCompletedGoals}/{overallTotalGoals}
           </p>
-          <p className="text-xs font-bold text-muted-foreground mt-0.5">{t("studyProgress")}</p>
+          <p className="text-xs font-bold text-muted-foreground mt-0.5">{t("totalDayProgress")}</p>
         </div>
 
         <div className="pop-card bg-rose p-4">
@@ -252,16 +271,16 @@ function Index() {
         </div>
       </section>
 
-      {/* 1. Multi-Subject Daily Study Plan & Combined Daily Goals */}
-      <section className="pop-card p-5 md:p-6 bg-card">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+      {/* 1. Combined Daily Achievement: Study Sessions + Tasks */}
+      <section className="pop-card p-5 md:p-6 bg-card space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
               <span className="text-2xl">🎯</span>
-              <h2 className="text-2xl font-black">{t("dailyPlan")}</h2>
+              <h2 className="text-2xl font-black">{t("dailyOverviewTitle")}</h2>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5 no-print">
-              {t("dailyPlanSubtitle")}
+              {t("totalDayProgress")}
             </p>
           </div>
 
@@ -297,188 +316,282 @@ function Index() {
         </div>
 
         {/* Combined Overall Daily Progress Bar (Subjects + Tasks) */}
-        {overallTotalGoals > 0 && (
-          <div className="mb-5 rounded-2xl border-2 border-foreground bg-muted p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-black mb-2">
-              <span className="flex items-center gap-1.5">
-                <Sparkles className="size-4 text-primary" />
-                {t("studyProgress")}: {overallCompletedGoals} / {overallTotalGoals} ({overallProgressPct}%)
+        <div className="rounded-2xl border-2 border-foreground bg-muted/60 p-4 shadow-[var(--shadow-pop-sm)]">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-black mb-2">
+            <span className="flex items-center gap-2 text-base">
+              <Sparkles className="size-5 text-primary" />
+              <span>{t("totalDayProgress")}:</span>
+              <span className="font-display text-lg text-primary">
+                {overallCompletedGoals} / {overallTotalGoals}
               </span>
-              <span className="text-xs text-muted-foreground font-bold">
-                {totalAchievedMins} / {totalTargetMins} {t("min")}
+              <span className="text-xs bg-card px-2.5 py-0.5 rounded-full border border-foreground/30 font-bold">
+                {overallProgressPct}%
               </span>
-            </div>
-
-            {/* Overall Progress meter */}
-            <div className="h-4 w-full overflow-hidden rounded-full border-2 border-foreground bg-card">
-              <div
-                className="h-full bg-mint transition-all duration-500"
-                style={{ width: `${overallProgressPct}%` }}
-              />
-            </div>
-
-            {/* Achievement breakdown pills */}
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-bold">
-              <span className="inline-flex items-center gap-1 rounded-full border border-foreground/30 bg-card px-2.5 py-0.5">
-                📚 {t("subjectsAchievement")}: {completedSubjects} / {totalPlannedSubjects}
-              </span>
-
-              {totalTodayTasks > 0 && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-foreground/30 bg-card px-2.5 py-0.5">
-                  ✅ {t("tasksAchievement")}: {completedTodayTasks} / {totalTodayTasks}
-                </span>
-              )}
-            </div>
-
-            {overallProgressPct === 100 && (
-              <p className="mt-3 text-xs font-black text-emerald-700 text-center animate-bounce">
-                {t("allGoalsDone")}
-              </p>
-            )}
+            </span>
+            <span className="text-xs text-muted-foreground font-bold">
+              ⏱️ {totalAchievedMins} / {totalTargetMins} {t("min")}
+            </span>
           </div>
-        )}
 
-        {/* List of planned subjects */}
-        {todayPlan.length === 0 ? (
-          <div className="rounded-2xl border-2 border-dashed border-foreground/30 p-8 text-center bg-muted/30">
-            <p className="text-muted-foreground font-bold">{t("noPlanYet")}</p>
-            <div className="mt-4 flex flex-wrap justify-center gap-2 no-print">
-              <button
-                onClick={openNewPlanModal}
-                className="pop-btn bg-primary text-primary-foreground text-sm"
-              >
-                <Plus className="size-4" /> {t("addSubjectPlan")}
-              </button>
-              {todays.length > 0 && (
+          {/* Overall Progress meter */}
+          <div className="h-5 w-full overflow-hidden rounded-full border-2 border-foreground bg-card">
+            <div
+              className={`h-full transition-all duration-500 ${
+                overallProgressPct === 100 ? "bg-mint" : "bg-sun"
+              }`}
+              style={{ width: `${Math.max(overallProgressPct, overallTotalGoals > 0 ? 4 : 0)}%` }}
+            />
+          </div>
+
+          {/* Achievement breakdown pillars side-by-side */}
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold">
+            <div
+              className={`flex items-center justify-between rounded-xl border-2 border-foreground p-3 transition ${
+                completedSubjects > 0 && completedSubjects === totalPlannedSubjects
+                  ? "bg-mint/40"
+                  : "bg-card"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-lg">📚</span>
+                <div>
+                  <p className="font-black text-sm">{t("studySectionTitle")}</p>
+                  <p className="text-[11px] text-muted-foreground font-semibold">
+                    {totalAchievedMins} {t("min")} / {totalTargetMins} {t("min")}
+                  </p>
+                </div>
+              </div>
+              <span className="font-extrabold text-sm px-2.5 py-1 rounded-lg bg-muted border border-foreground/20">
+                {completedSubjects} / {totalPlannedSubjects}
+              </span>
+            </div>
+
+            <div
+              className={`flex items-center justify-between rounded-xl border-2 border-foreground p-3 transition ${
+                totalTodayTasks > 0 && completedTodayTasks === totalTodayTasks
+                  ? "bg-mint/40"
+                  : "bg-card"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-lg">✅</span>
+                <div>
+                  <p className="font-black text-sm">{t("tasksSectionTitle")}</p>
+                  <p className="text-[11px] text-muted-foreground font-semibold">
+                    {completedTodayTasks} {t("done")} / {totalTodayTasks - completedTodayTasks} {t("pending")}
+                  </p>
+                </div>
+              </div>
+              <span className="font-extrabold text-sm px-2.5 py-1 rounded-lg bg-muted border border-foreground/20">
+                {completedTodayTasks} / {totalTodayTasks}
+              </span>
+            </div>
+          </div>
+
+          {overallTotalGoals > 0 && overallProgressPct === 100 && (
+            <div className="mt-3 rounded-xl border-2 border-foreground bg-mint p-2.5 text-center text-xs font-black shadow-[var(--shadow-pop-sm)]">
+              {t("allGoalsDone")}
+            </div>
+          )}
+        </div>
+
+        {/* Pillar 1: Study Subjects (📚 مذاكرة المواد) */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-black flex items-center gap-2">
+              <span>{t("studySectionTitle")}</span>
+              <span className="text-xs bg-muted px-2.5 py-0.5 rounded-full border border-foreground/20 font-bold">
+                {completedSubjects}/{totalPlannedSubjects}
+              </span>
+            </h3>
+            <button
+              onClick={openNewPlanModal}
+              className="pop-btn bg-card text-xs py-1 px-3 no-print"
+            >
+              <Plus className="size-3.5" />
+              {t("addSubjectPlan")}
+            </button>
+          </div>
+
+          {todayPlan.length === 0 ? (
+            <div className="rounded-2xl border-2 border-dashed border-foreground/30 p-6 text-center bg-muted/20">
+              <p className="text-muted-foreground font-bold text-sm">{t("noPlanYet")}</p>
+              <div className="mt-3 flex flex-wrap justify-center gap-2 no-print">
                 <button
-                  onClick={() => importScheduleToPlan()}
-                  className="pop-btn bg-secondary text-sm"
+                  onClick={openNewPlanModal}
+                  className="pop-btn bg-primary text-primary-foreground text-xs"
                 >
-                  <Download className="size-4" /> {t("importSchedule")}
+                  <Plus className="size-3.5" /> {t("addSubjectPlan")}
                 </button>
-              )}
+                {todays.length > 0 && (
+                  <button
+                    onClick={() => importScheduleToPlan()}
+                    className="pop-btn bg-secondary text-xs"
+                  >
+                    <Download className="size-3.5" /> {t("importSchedule")}
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {todayPlan.map((item) => {
-              const studiedMins = subjectStatsToday[item.subject] ?? 0;
-              const isTargetReached = studiedMins >= item.targetMinutes;
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {todayPlan.map((item) => {
+                const studiedMins = subjectStatsToday[item.subject] ?? 0;
+                const isTargetReached = studiedMins >= item.targetMinutes;
 
-              return (
-                <div
-                  key={item.id}
-                  className={`pop-card relative flex flex-col justify-between p-4 transition-all ${colorBg[item.color]} ${
-                    item.done ? "opacity-75" : ""
-                  }`}
-                >
-                  <div>
-                    <div className="flex items-start justify-between gap-2">
-                      <button
-                        onClick={() => togglePlanItem(item.id)}
-                        className={`grid size-7 shrink-0 place-items-center rounded-lg border-2 border-foreground transition ${
-                          item.done ? "bg-primary text-primary-foreground" : "bg-card hover:bg-muted"
-                        }`}
-                        title={item.done ? t("done") : t("pending")}
-                      >
-                        {item.done && <Check className="size-4 stroke-[3]" />}
-                      </button>
-
-                      <div className="flex-1 min-w-0">
-                        <h3
-                          className={`text-lg font-black leading-tight truncate ${
-                            item.done ? "line-through text-foreground/60" : "text-foreground"
+                return (
+                  <div
+                    key={item.id}
+                    className={`pop-card relative flex flex-col justify-between p-4 transition-all ${colorBg[item.color]} ${
+                      item.done ? "opacity-75" : ""
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-2">
+                        <button
+                          onClick={() => togglePlanItem(item.id)}
+                          className={`grid size-7 shrink-0 place-items-center rounded-lg border-2 border-foreground transition ${
+                            item.done ? "bg-primary text-primary-foreground" : "bg-card hover:bg-muted"
                           }`}
+                          title={item.done ? t("done") : t("pending")}
                         >
-                          {item.subject}
-                        </h3>
-                        {item.notes && (
-                          <p className="text-xs font-semibold text-foreground/80 mt-1 line-clamp-2">
-                            {item.notes}
-                          </p>
-                        )}
+                          {item.done && <Check className="size-4 stroke-[3]" />}
+                        </button>
+
+                        <div className="flex-1 min-w-0">
+                          <h4
+                            className={`text-lg font-black leading-tight truncate ${
+                              item.done ? "line-through text-foreground/60" : "text-foreground"
+                            }`}
+                          >
+                            {item.subject}
+                          </h4>
+                          {item.notes && (
+                            <p className="text-xs font-semibold text-foreground/80 mt-1 line-clamp-2">
+                              {item.notes}
+                            </p>
+                          )}
+                        </div>
+
+                        <button
+                          onClick={() => deletePlanItem(item.id)}
+                          className="rounded-lg p-1 text-foreground/60 hover:text-destructive hover:bg-card/50 transition no-print"
+                          title={t("delete")}
+                        >
+                          <Trash2 className="size-4" />
+                        </button>
                       </div>
 
+                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-bold">
+                        <span className="inline-flex items-center gap-1 rounded-full border border-foreground bg-card px-2.5 py-0.5">
+                          <Clock className="size-3" />
+                          {item.targetMinutes} {t("min")}
+                        </span>
+
+                        {studiedMins > 0 && (
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full border border-foreground px-2 py-0.5 ${
+                              isTargetReached ? "bg-mint text-foreground" : "bg-card text-foreground"
+                            }`}
+                          >
+                            {studiedMins} {t("min")} {t("done")}
+                            {isTargetReached && " ✓"}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-foreground/20 flex items-center justify-between no-print">
                       <button
-                        onClick={() => deletePlanItem(item.id)}
-                        className="rounded-lg p-1 text-foreground/60 hover:text-destructive hover:bg-card/50 transition no-print"
-                        title={t("delete")}
+                        onClick={() =>
+                          navigate({
+                            to: "/timer",
+                            search: { subject: item.subject },
+                          })
+                        }
+                        className="pop-btn bg-card text-xs py-1 px-3 w-full justify-center"
+                        title={t("startStudying")}
                       >
-                        <Trash2 className="size-4" />
+                        <Play className="size-3 fill-current" />
+                        {t("startStudying")}
                       </button>
                     </div>
-
-                    <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-bold">
-                      <span className="inline-flex items-center gap-1 rounded-full border border-foreground bg-card px-2.5 py-0.5">
-                        <Clock className="size-3" />
-                        {item.targetMinutes} {t("min")}
-                      </span>
-
-                      {studiedMins > 0 && (
-                        <span
-                          className={`inline-flex items-center gap-1 rounded-full border border-foreground px-2 py-0.5 ${
-                            isTargetReached ? "bg-mint text-foreground" : "bg-card text-foreground"
-                          }`}
-                        >
-                          {studiedMins} {t("min")} {t("done")}
-                          {isTargetReached && " ✓"}
-                        </span>
-                      )}
-                    </div>
                   </div>
-
-                  <div className="mt-4 pt-3 border-t border-foreground/20 flex items-center justify-between no-print">
-                    <button
-                      onClick={() =>
-                        navigate({
-                          to: "/timer",
-                          search: { subject: item.subject },
-                        })
-                      }
-                      className="pop-btn bg-card text-xs py-1 px-3 w-full justify-center"
-                      title={t("startStudying")}
-                    >
-                      <Play className="size-3 fill-current" />
-                      {t("startStudying")}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* 2. Tasks Due Today section inside Daily Achievement */}
-        {todayTasks.length > 0 && (
-          <div className="mt-6 pt-5 border-t border-foreground/15">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-black flex items-center gap-2">
-                <ListCheck className="size-4 text-primary" />
-                <span>{t("dailyTasksSection")}</span>
-                <span className="text-xs bg-muted px-2 py-0.5 rounded-full border border-foreground/20">
-                  {completedTodayTasks}/{totalTodayTasks}
-                </span>
-              </h3>
-              <Link to="/tasks" className="text-xs font-bold text-primary hover:underline">
-                {t("seeAll")}
-              </Link>
+                );
+              })}
             </div>
+          )}
+        </div>
 
+        {/* Pillar 2: Tasks & Assignments (✅ المهام والواجبات) */}
+        <div className="pt-5 border-t border-foreground/15">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h3 className="text-lg font-black flex items-center gap-2">
+              <span>{t("tasksSectionTitle")}</span>
+              <span className="text-xs bg-muted px-2.5 py-0.5 rounded-full border border-foreground/20 font-bold">
+                {completedTodayTasks}/{totalTodayTasks}
+              </span>
+            </h3>
+            <Link to="/tasks" className="text-xs font-bold text-primary hover:underline">
+              {t("seeAll")} →
+            </Link>
+          </div>
+
+          {/* Quick Add Task directly for Today */}
+          <form onSubmit={handleAddQuickTask} className="mb-3 flex flex-wrap gap-2 no-print">
+            <input
+              type="text"
+              value={quickTaskTitle}
+              onChange={(e) => setQuickTaskTitle(e.target.value)}
+              placeholder={t("quickTaskPlaceholder")}
+              className="pop-input flex-1 min-w-[200px] text-xs py-2 px-3"
+            />
+            {allSubjects.length > 0 && (
+              <select
+                value={quickTaskSubject}
+                onChange={(e) => setQuickTaskSubject(e.target.value)}
+                className="pop-input text-xs py-2 px-2 max-w-[140px]"
+              >
+                <option value="">{t("subject")}...</option>
+                {allSubjects.map((sb) => (
+                  <option key={sb} value={sb}>
+                    {sb}
+                  </option>
+                ))}
+              </select>
+            )}
+            <button
+              type="submit"
+              disabled={!quickTaskTitle.trim()}
+              className="pop-btn bg-primary text-primary-foreground text-xs py-2 px-4 disabled:opacity-50"
+            >
+              <Plus className="size-3.5" />
+              {t("addQuickTaskToday")}
+            </button>
+          </form>
+
+          {/* List of today tasks */}
+          {todayTasks.length === 0 ? (
+            <div className="rounded-2xl border-2 border-dashed border-foreground/30 p-5 text-center bg-muted/20">
+              <p className="text-muted-foreground font-bold text-xs">{t("noTasksYetToday")}</p>
+            </div>
+          ) : (
             <div className="grid gap-2 sm:grid-cols-2">
               {todayTasks.map((tk) => (
                 <div
                   key={tk.id}
                   className={`flex items-center justify-between gap-2.5 rounded-xl border-2 border-foreground p-3 transition ${
-                    tk.done ? "bg-mint/40 opacity-70" : "bg-card"
+                    tk.done ? "bg-mint/40 opacity-75" : "bg-card"
                   }`}
                 >
                   <button
                     onClick={() => toggleTask(tk.id)}
-                    className={`grid size-6 shrink-0 place-items-center rounded-md border-2 border-foreground transition ${
+                    className={`grid size-7 shrink-0 place-items-center rounded-lg border-2 border-foreground transition ${
                       tk.done ? "bg-primary text-primary-foreground" : "bg-card hover:bg-muted"
                     }`}
+                    title={tk.done ? t("done") : t("pending")}
                   >
-                    {tk.done && <Check className="size-3.5 stroke-[3]" />}
+                    {tk.done && <Check className="size-4 stroke-[3]" />}
                   </button>
 
                   <div className="flex-1 min-w-0">
@@ -489,11 +602,27 @@ function Index() {
                     >
                       {tk.title}
                     </p>
-                    {tk.subject && (
-                      <span className="text-[11px] font-bold text-muted-foreground">
-                        {tk.subject}
-                      </span>
-                    )}
+                    <div className="flex flex-wrap items-center gap-1.5 mt-1 text-[11px] font-bold">
+                      {tk.subject && (
+                        <span className="rounded bg-muted px-1.5 py-0.5 text-muted-foreground border border-foreground/15">
+                          {tk.subject}
+                        </span>
+                      )}
+                      {tk.done ? (
+                        <span className="text-emerald-700 font-extrabold">
+                          {t("completedTodayBadge")}
+                        </span>
+                      ) : (
+                        <span className="text-amber-700 font-semibold">
+                          {t("pendingTodayBadge")}
+                        </span>
+                      )}
+                      {tk.estimatedMinutes && (
+                        <span className="text-muted-foreground">
+                          · {tk.estimatedMinutes} {t("min")}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <button
@@ -503,7 +632,7 @@ function Index() {
                         search: { subject: tk.subject || tk.title, taskId: tk.id },
                       })
                     }
-                    className="p-1 text-primary hover:bg-muted rounded"
+                    className="p-1.5 text-primary hover:bg-muted rounded-lg border border-transparent hover:border-foreground transition"
                     title={t("focusOnTask")}
                   >
                     <Play className="size-3.5 fill-current" />
@@ -511,8 +640,8 @@ function Index() {
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </section>
 
       {/* Grid: Today's Schedule Sessions & Due Soon Tasks */}
