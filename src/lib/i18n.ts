@@ -34,7 +34,7 @@ const dict = {
   save: { ar: "حفظ", en: "Save", el: "Αποθήκευση" },
   cancel: { ar: "إلغاء", en: "Cancel", el: "Άκυρο" },
   delete: { ar: "حذف", en: "Delete", el: "Διαγραφή" },
-  addTask: { ar: "إضافة مهمة", en: "Add task", el: "Νέα εργασία" },
+  addTask: { ar: "إضافة مهمة متطورة", en: "Add task", el: "Νέα εργασία" },
   taskTitle: { ar: "عنوان المهمة", en: "Task title", el: "Τίτλος εργασίας" },
   dueDate: { ar: "موعد التسليم", en: "Due", el: "Προθεσμία" },
   remind: { ar: "تذكير قبل", en: "Remind me", el: "Υπενθύμιση" },
@@ -58,7 +58,7 @@ const dict = {
   longBreak: { ar: "استراحة طويلة", en: "Long break", el: "Μεγάλο διάλειμμα" },
   start: { ar: "ابدأ", en: "Start", el: "Έναρξη" },
   pause: { ar: "إيقاف", en: "Pause", el: "Παύση" },
-  reset: { ar: "إعادة", en: "Reset", el: "Επαναφορά" },
+  reset: { ar: "إعادة", en: "Reset", el: "Επαناφορά" },
   focusDone: { ar: "انتهت جلسة التركيز! خذ استراحة 🎉", en: "Focus done! Take a break 🎉", el: "Τέλος εστίασης! Κάνε διάλειμμα 🎉" },
   breakDone: { ar: "انتهت الاستراحة، يلا نكمل 💪", en: "Break over, let's go 💪", el: "Τέλος διαλείμματος, πάμε 💪" },
   sessionsToday: { ar: "جلسات اليوم", en: "Sessions today", el: "Συνεδρίες σήμερα" },
@@ -68,9 +68,9 @@ const dict = {
     en: "Your data is saved on this device only",
     el: "Τα δεδομένα σου αποθηκεύονται μόνο σε αυτή τη συσκευή",
   },
-  seeAll: { ar: "عرض الكل", en: "See all", el: "Όλα" },
+  seeAll: { ar: "عرض الكل", en: "See all", el: "Όلا" },
 
-  // New features: Multi-subject daily plan & productivity
+  // Daily plan & productivity
   dailyPlan: { ar: "خطة مذاكرة اليوم", en: "Today's Study Plan", el: "Ημερήσιο Πλάνο Μελέτης" },
   dailyPlanSubtitle: {
     ar: "رتّب المواد التي ستذاكرها اليوم وحدد وقتاً مستهدفاً لكل مادة",
@@ -124,6 +124,38 @@ const dict = {
   previewSound: { ar: "تجربة الصوت", en: "Test chime", el: "Δοκιμή ήχου" },
   totalTarget: { ar: "المستهدف الإجمالي", en: "Total Target", el: "Συνολικός στόχος" },
   totalAchieved: { ar: "المحقق فعلياً", en: "Total Studied", el: "Πραγματοποιήθηκε" },
+
+  // Advanced Tasks
+  description: { ar: "تفاصيل / ملاحظات", en: "Description / Notes", el: "Περιγραφή / Σημειώσεις" },
+  subtasks: { ar: "الخطوات والمهام الفرعية", en: "Subtasks / Steps", el: "Υποεργασίες / Βήματα" },
+  addSubtask: { ar: "إضافة خطوة", en: "Add step", el: "Προσθήκη βήματος" },
+  editTask: { ar: "تعديل المهمة", en: "Edit Task", el: "Επεξεργασία" },
+  tag: { ar: "نوع المهمة", en: "Task Type", el: "Τύπος" },
+  tag_homework: { ar: "📝 واجب منزلي", en: "📝 Homework", el: "📝 Εργασία" },
+  tag_exam: { ar: "🎯 اختبار / امتحان", en: "🎯 Exam / Quiz", el: "🎯 Διαγώνισμα" },
+  tag_revision: { ar: "🔄 مراجعة", en: "🔄 Revision", el: "🔄 Επανάληψη" },
+  tag_project: { ar: "💡 بحث / مشروع", en: "💡 Project", el: "💡 Project" },
+  tag_reading: { ar: "📖 قراءة / استيعاب", en: "📖 Reading", el: "📖 Μελέτη" },
+  estMinutes: { ar: "الوقت المقدر (دقيقة)", en: "Estimated (min)", el: "Εκτίμηση (λεπ.)" },
+  searchTasks: { ar: "ابحث بالاسم، المادة، أو التفاصيل...", en: "Search tasks, subjects...", el: "Αναζήτηση εργασιών..." },
+  focusOnTask: { ar: "ركّز على هذه المهمة ⏱️", en: "Focus on this task ⏱️", el: "Εστίαση στην εργασία ⏱️" },
+  filterByTag: { ar: "تصفية بالتصنيف", en: "Filter by tag", el: "Φίλτρο ετικέτας" },
+  stepsDone: { ar: "خطوات مكتملة", en: "steps completed", el: "βήματα ολοκληρώθηκαν" },
+
+  // Advanced Timer Controls
+  timerSettings: { ar: "تخصيص أوقات المؤقت", en: "Timer Settings", el: "Ρυθμίσεις χρονομέτρου" },
+  customMinutes: { ar: "تخصيص الوقت", en: "Custom time", el: "Προσαρμογή" },
+  adjustTime: { ar: "تعديل الوقت", en: "Adjust time", el: "Ρύθμιση χρόνου" },
+  round: { ar: "الجولة", en: "Round", el: "Γύρος" },
+  of: { ar: "من", en: "of", el: "από" },
+  roundsGoal: { ar: "عدد الجولات", en: "Rounds goal", el: "Στόχος γύρων" },
+  focusDuration: { ar: "وقت التركيز (دقيقة)", en: "Focus duration (min)", el: "Χρόνος εστίασης (λεπ.)" },
+  shortBreakDuration: { ar: "استراحة قصيرة (دقيقة)", en: "Short break (min)", el: "Σύντομο διάλειμμα (λεπ.)" },
+  longBreakDuration: { ar: "استراحة طويلة (دقيقة)", en: "Long break (min)", el: "Μεγάλο διάλειμμα (λεπ.)" },
+  autoStart: { ar: "الانتقال التلقائي للاستراحة", en: "Auto-start breaks", el: "Αυτόματη έναρξη διαλείμματος" },
+  selectTask: { ar: "ربط بمهمة محددة", en: "Link to a task", el: "Σύνδεση με εργασία" },
+  linkedTask: { ar: "المهمة المرتبطة", en: "Linked Task", el: "Συνδεδεμένη εργασία" },
+  quickDurations: { ar: "أوقات سريعة", en: "Quick times", el: "Γρήγοροι χρόνοι" },
 } as const;
 
 export type Key = keyof typeof dict;

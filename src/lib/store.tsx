@@ -6,15 +6,37 @@ import { translate, type Key, type Lang } from "./i18n";
 export const COLORS = ["coral", "sun", "mint", "sky", "grape", "rose"] as const;
 export type Color = (typeof COLORS)[number];
 
+export const colorBg: Record<Color, string> = {
+  coral: "bg-coral",
+  sun: "bg-sun",
+  mint: "bg-mint",
+  sky: "bg-sky",
+  grape: "bg-grape",
+  rose: "bg-rose",
+};
+
 export type Session = { id: string; subject: string; day: number; start: string; end: string; color: Color };
 export type Priority = "low" | "med" | "high";
+
+export type Subtask = {
+  id: string;
+  title: string;
+  done: boolean;
+};
+
+export type TaskTag = "homework" | "exam" | "revision" | "project" | "reading";
+
 export type Task = {
   id: string;
   title: string;
+  description?: string | undefined;
   subject?: string | undefined;
   due?: string | undefined;
   remindMin: number;
   priority: Priority;
+  tag?: TaskTag | undefined;
+  estimatedMinutes?: number | undefined;
+  subtasks?: Subtask[];
   done: boolean;
   reminded?: boolean;
 };
@@ -34,7 +56,16 @@ export type FocusRecord = {
   date: string; // "YYYY-MM-DD"
   timestamp: number;
   subject: string;
+  taskId?: string;
   minutes: number;
+};
+
+export type TimerSettings = {
+  focusMinutes: number;
+  shortBreakMinutes: number;
+  longBreakMinutes: number;
+  roundsGoal: number;
+  autoStartBreaks: boolean;
 };
 
 type State = {
@@ -45,9 +76,19 @@ type State = {
   focusLog: Record<string, number>; // date -> total focus count
   focusRecords: FocusRecord[]; // detailed records per subject
   soundEnabled: boolean;
+  timerSettings: TimerSettings;
 };
 
-const KEY = "zaker-state-v2";
+const KEY = "zaker-state-v3";
+
+const defaultTimerSettings: TimerSettings = {
+  focusMinutes: 25,
+  shortBreakMinutes: 5,
+  longBreakMinutes: 15,
+  roundsGoal: 4,
+  autoStartBreaks: false,
+};
+
 const initial: State = {
   lang: "ar",
   sessions: [],
@@ -56,6 +97,7 @@ const initial: State = {
   focusLog: {},
   focusRecords: [],
   soundEnabled: true,
+  timerSettings: defaultTimerSettings,
 };
 
 type Ctx = State & {
@@ -63,20 +105,24 @@ type Ctx = State & {
   t: (k: Key) => string;
   setLang: (l: Lang) => void;
   setSoundEnabled: (v: boolean) => void;
+  updateTimerSettings: (settings: Partial<TimerSettings>) => void;
   // Sessions
   saveSession: (s: Omit<Session, "id"> & { id?: string }) => void;
   deleteSession: (id: string) => void;
   // Tasks
-  saveTask: (t: Omit<Task, "id" | "done"> & { id?: string }) => void;
+  saveTask: (t: Omit<Task, "id" | "done"> & { id?: string; done?: boolean }) => void;
   toggleTask: (id: string) => void;
   deleteTask: (id: string) => void;
+  toggleSubtask: (taskId: string, subtaskId: string) => void;
+  addSubtask: (taskId: string, title: string) => void;
+  deleteSubtask: (taskId: string, subtaskId: string) => void;
   // Daily Study Plan
   savePlanItem: (p: Omit<DailyPlanItem, "id" | "done"> & { id?: string; done?: boolean }) => void;
   togglePlanItem: (id: string) => void;
   deletePlanItem: (id: string) => void;
   importScheduleToPlan: (dateKey?: string) => void;
   // Focus & Timer
-  logFocus: (subject?: string, minutes?: number) => void;
+  logFocus: (subject?: string, minutes?: number, taskId?: string) => void;
   // Computed helpers
   allSubjects: string[];
   todayPlan: DailyPlanItem[];
@@ -106,15 +152,26 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(KEY) || localStorage.getItem("zaker-state-v1");
+      const raw =
+        localStorage.getItem(KEY) ||
+        localStorage.getItem("zaker-state-v2") ||
+        localStorage.getItem("zaker-state-v1");
       if (raw) {
         const parsed = JSON.parse(raw);
         setState({
           ...initial,
           ...parsed,
+          tasks: (parsed.tasks || []).map((tk: Task) => ({
+            ...tk,
+            subtasks: tk.subtasks || [],
+          })),
           dailyPlans: parsed.dailyPlans || [],
           focusRecords: parsed.focusRecords || [],
           soundEnabled: parsed.soundEnabled ?? true,
+          timerSettings: {
+            ...defaultTimerSettings,
+            ...(parsed.timerSettings || {}),
+          },
         });
       }
     } catch (e) {
@@ -199,18 +256,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   // Derived: Study Streak calculation 🔥
   const studyStreak = useMemo(() => {
-    // Gather all active dates
     const activeDates = new Set<string>();
-    // 1. Any focus activity
     Object.keys(state.focusLog).forEach((d) => {
       if ((state.focusLog[d] ?? 0) > 0) activeDates.add(d);
     });
     state.focusRecords.forEach((r) => activeDates.add(r.date));
-    // 2. Any completed daily plan items
     state.dailyPlans.forEach((p) => {
       if (p.done) activeDates.add(p.date);
     });
-    // 3. Any completed tasks
     state.tasks.forEach((t) => {
       if (t.done && t.due) activeDates.add(t.due.slice(0, 10));
     });
@@ -222,7 +275,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const checkDate = new Date();
 
     if (!hasToday) {
-      // Check from yesterday
       checkDate.setDate(checkDate.getDate() - 1);
     }
 
@@ -245,6 +297,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     t,
     setLang: (lang) => setState((s) => ({ ...s, lang })),
     setSoundEnabled: (v) => setState((s) => ({ ...s, soundEnabled: v })),
+    updateTimerSettings: (newSettings) =>
+      setState((s) => ({
+        ...s,
+        timerSettings: { ...s.timerSettings, ...newSettings },
+      })),
 
     // Sessions
     saveSession: (s) =>
@@ -261,11 +318,79 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setState((st) => ({
         ...st,
         tasks: tk.id
-          ? st.tasks.map((x) => (x.id === tk.id ? { ...x, ...tk, reminded: false } : x))
-          : [{ ...tk, id: uid(), done: false }, ...st.tasks],
+          ? st.tasks.map((x) =>
+              x.id === tk.id
+                ? {
+                    ...x,
+                    ...tk,
+                    subtasks: tk.subtasks ?? x.subtasks ?? [],
+                    reminded: false,
+                  }
+                : x,
+            )
+          : [
+              {
+                ...tk,
+                id: uid(),
+                done: tk.done ?? false,
+                subtasks: tk.subtasks ?? [],
+              },
+              ...st.tasks,
+            ],
       })),
-    toggleTask: (id) => setState((st) => ({ ...st, tasks: st.tasks.map((x) => (x.id === id ? { ...x, done: !x.done } : x)) })),
+    toggleTask: (id) =>
+      setState((st) => {
+        const item = st.tasks.find((x) => x.id === id);
+        if (item && !item.done && st.soundEnabled) {
+          playChime("focus");
+        }
+        return {
+          ...st,
+          tasks: st.tasks.map((x) => (x.id === id ? { ...x, done: !x.done } : x)),
+        };
+      }),
     deleteTask: (id) => setState((st) => ({ ...st, tasks: st.tasks.filter((x) => x.id !== id) })),
+
+    // Subtasks operations
+    toggleSubtask: (taskId, subtaskId) =>
+      setState((st) => ({
+        ...st,
+        tasks: st.tasks.map((tk) => {
+          if (tk.id !== taskId) return tk;
+          const updatedSubtasks = (tk.subtasks || []).map((stk) =>
+            stk.id === subtaskId ? { ...stk, done: !stk.done } : stk,
+          );
+          return {
+            ...tk,
+            subtasks: updatedSubtasks,
+          };
+        }),
+      })),
+
+    addSubtask: (taskId, title) =>
+      setState((st) => ({
+        ...st,
+        tasks: st.tasks.map((tk) => {
+          if (tk.id !== taskId) return tk;
+          const newSubtask: Subtask = { id: uid(), title: title.trim(), done: false };
+          return {
+            ...tk,
+            subtasks: [...(tk.subtasks || []), newSubtask],
+          };
+        }),
+      })),
+
+    deleteSubtask: (taskId, subtaskId) =>
+      setState((st) => ({
+        ...st,
+        tasks: st.tasks.map((tk) => {
+          if (tk.id !== taskId) return tk;
+          return {
+            ...tk,
+            subtasks: (tk.subtasks || []).filter((stk) => stk.id !== subtaskId),
+          };
+        }),
+      })),
 
     // Daily Study Plan
     savePlanItem: (p) =>
@@ -330,13 +455,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     },
 
     // Focus & Timer
-    logFocus: (subject = translate(state.lang, "generalStudy"), minutes = 25) => {
+    logFocus: (subject = translate(state.lang, "generalStudy"), minutes = 25, taskId) => {
       const date = todayKey();
       const record: FocusRecord = {
         id: uid(),
         date,
         timestamp: Date.now(),
         subject,
+        taskId,
         minutes,
       };
 

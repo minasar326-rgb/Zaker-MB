@@ -69,11 +69,4 @@ export function Shell({ children }: { children: ReactNode }) {
   );
 }
 
-export const colorBg: Record<string, string> = {
-  coral: "bg-coral",
-  sun: "bg-sun",
-  mint: "bg-mint",
-  sky: "bg-sky",
-  grape: "bg-grape",
-  rose: "bg-rose",
-};
+export { colorBg } from "@/lib/store";
