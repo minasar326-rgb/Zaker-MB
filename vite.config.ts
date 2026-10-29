@@ -6,6 +6,7 @@ import { defineConfig } from "vite";
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "/Zaker-MB/",
   plugins: [
     TanStackRouterVite({
       target: "react",
