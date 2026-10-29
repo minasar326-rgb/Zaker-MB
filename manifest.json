@@ -112,19 +112,19 @@
   ],
   "icons": [
     {
-      "src": "/Zaker-MB/icons/icon-192.png",
+      "src": "/Zaker-MB/icons/zaker-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/Zaker-MB/icons/icon-512.png",
+      "src": "/Zaker-MB/icons/zaker-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/Zaker-MB/icons/icon-maskable.png",
+      "src": "/Zaker-MB/icons/zaker-maskable.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -154,7 +154,7 @@
       "url": "/Zaker-MB/?action=schedule",
       "icons": [
         {
-          "src": "/Zaker-MB/icons/icon-192.png",
+          "src": "/Zaker-MB/icons/zaker-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -167,7 +167,7 @@
       "url": "/Zaker-MB/?action=new_task",
       "icons": [
         {
-          "src": "/Zaker-MB/icons/icon-192.png",
+          "src": "/Zaker-MB/icons/zaker-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -180,7 +180,7 @@
       "url": "/Zaker-MB/?action=timer",
       "icons": [
         {
-          "src": "/Zaker-MB/icons/icon-192.png",
+          "src": "/Zaker-MB/icons/zaker-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
