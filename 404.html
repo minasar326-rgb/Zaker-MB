@@ -23,23 +23,40 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
 
     <script>
-      // تسجيل Service Worker لضمان العمل أوفلاين 100% بدون إنترنت
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          var swPath = window.location.pathname.includes('/Zaker-MB') ? '/Zaker-MB/sw.js' : '/sw.js';
-          var swScope = window.location.pathname.includes('/Zaker-MB') ? '/Zaker-MB/' : '/';
-          navigator.serviceWorker.register(swPath, { scope: swScope }).then(function(reg) {
-            console.log('[Zaker SW] Service Worker مسجل بنجاح بنطاق:', reg.scope);
-            reg.update().catch(function() {});
-            if ('sync' in reg && reg.sync) {
-              reg.sync.register('sync-tasks').catch(function() {});
+      if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+        var refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        });
+
+        var swBase = location.pathname.startsWith('/Zaker-MB')
+          ? '/Zaker-MB/'
+          : (location.pathname.startsWith('/zaker') ? '/zaker/' : '/');
+
+        navigator.serviceWorker.register(swBase + 'sw.js', { scope: swBase }).then(function(reg) {
+          console.log('[Zaker SW] Service Worker مسجل بنجاح بنطاق:', reg.scope);
+          reg.update().catch(function() {});
+          reg.addEventListener('updatefound', function() {
+            var newWorker = reg.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', function() {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                }
+              });
             }
-            if ('periodicSync' in reg && reg.periodicSync) {
-              reg.periodicSync.register('daily-schedule-sync', { minInterval: 24 * 60 * 60 * 1000 }).catch(function() {});
-            }
-          }).catch(function(err) {
-            console.warn('[Zaker SW] فشل تسجيل Service Worker:', err);
           });
+          if ('sync' in reg && reg.sync) {
+            reg.sync.register('sync-tasks').catch(function() {});
+          }
+          if ('periodicSync' in reg && reg.periodicSync) {
+            reg.periodicSync.register('daily-schedule-sync', { minInterval: 24 * 60 * 60 * 1000 }).catch(function() {});
+          }
+        }).catch(function(err) {
+          console.warn('[Zaker SW] فشل تسجيل Service Worker:', err);
         });
       }
     </script>
