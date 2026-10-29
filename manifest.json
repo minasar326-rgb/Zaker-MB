@@ -1,0 +1,181 @@
+{
+  "id": "https://minasar326-rgb.github.io/Zaker-MB/",
+  "name": "ذاكر - تنظيم اليوم الدراسي وجدول المذاكرة والمهام اليومية",
+  "short_name": "ذاكر",
+  "description": "ذاكر: تطبيق للمذاكرة وتحديد جداول للمهام اليومية والمذاكرة اليومية وتنظيم اليوم الدراسي والواجبات المدرسية - يعمل أوفلاين 100% بدون إنترنت.",
+  "start_url": "/Zaker-MB/?source=pwa",
+  "scope": "/Zaker-MB/",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "tabbed",
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#faf6ed",
+  "theme_color": "#f26430",
+  "dir": "rtl",
+  "lang": "ar",
+  "categories": [
+    "education",
+    "productivity",
+    "utilities"
+  ],
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "scope_extensions": [
+    {
+      "origin": "https://minasar326-rgb.github.io"
+    }
+  ],
+  "launch_handler": {
+    "client_mode": [
+      "navigate-existing",
+      "auto"
+    ]
+  },
+  "edge_side_panel": {
+    "preferred_width": 480
+  },
+  "tab_strip": {
+    "home_tab": {
+      "scope_patterns": [
+        "*"
+      ]
+    },
+    "new_tab_button": {
+      "url": "/Zaker-MB/"
+    }
+  },
+  "note_taking": {
+    "new_note_url": "/Zaker-MB/?action=new_task"
+  },
+  "file_handlers": [
+    {
+      "action": "/Zaker-MB/?action=import",
+      "name": "ملف جدول مهام ذاكر",
+      "accept": {
+        "application/json": [
+          ".json"
+        ],
+        "application/x-zaker": [
+          ".zaker"
+        ]
+      }
+    }
+  ],
+  "share_target": {
+    "action": "/Zaker-MB/?action=share",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+zaker",
+      "url": "/Zaker-MB/?action=%s"
+    }
+  ],
+  "handle_links": "preferred",
+  "widgets": [
+    {
+      "name": "ذاكر - جدول المذاكرة اليومي",
+      "short_name": "جدول ذاكر",
+      "description": "عرض جدول المذاكرة والمهام اليومية وتنظيم اليوم الدراسي بضغطة واحدة",
+      "tag": "zaker-widget",
+      "template": "widget-template",
+      "ms_ac_template": "/Zaker-MB/widgets/balance.json",
+      "data": "/Zaker-MB/widgets/balance-data.json",
+      "type": "application/json",
+      "screenshots": [
+        {
+          "src": "/Zaker-MB/screenshots/screenshot-mobile.png",
+          "sizes": "390x844",
+          "label": "معاينة ودجت ذاكر"
+        }
+      ]
+    }
+  ],
+  "icons": [
+    {
+      "src": "/Zaker-MB/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/Zaker-MB/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/Zaker-MB/icons/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/Zaker-MB/screenshots/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "واجهة تطبيق ذاكر لتنظيم المذاكرة على الهاتف المحمول"
+    },
+    {
+      "src": "/Zaker-MB/screenshots/screenshot-desktop.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "لوحة تنظيم اليوم الدراسي وجدول المهام اليومية في ذاكر"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "جدول المذاكرة اليومي",
+      "short_name": "جدول المذاكرة",
+      "description": "عرض جدول الحصص والمهام الدراسية لليوم",
+      "url": "/Zaker-MB/?action=schedule",
+      "icons": [
+        {
+          "src": "/Zaker-MB/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "إضافة مهمة دراسية جديدة",
+      "short_name": "مهمة جديدة",
+      "description": "تسجيل واجب مدرسي أو مراجعة يومية",
+      "url": "/Zaker-MB/?action=new_task",
+      "icons": [
+        {
+          "src": "/Zaker-MB/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "مؤقت التركيز والمذاكرة",
+      "short_name": "مؤقت المذاكرة",
+      "description": "بدء جلسة مذاكرة بومودورو للتركيز العالي",
+      "url": "/Zaker-MB/?action=timer",
+      "icons": [
+        {
+          "src": "/Zaker-MB/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

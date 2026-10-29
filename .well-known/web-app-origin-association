@@ -1,0 +1,10 @@
+{
+  "web_apps": [
+    {
+      "manifest": "https://minasar326-rgb.github.io/Zaker-MB/manifest.json",
+      "details": {
+        "paths": ["/*"]
+      }
+    }
+  ]
+}
