@@ -10,16 +10,16 @@ import {
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
 
-// Hash history allows the app to work seamlessly even when opened directly via file://
+// Hash history allows the app to work seamlessly everywhere:
+// - file:/// local opening
+// - GitHub Pages subdirectories (e.g. /zaker/)
+// - Local dev server
 const hashHistory = createHashHistory();
 
 // Create a new router instance
 const router = createRouter({
   routeTree,
-  history:
-    typeof window !== "undefined" && window.location.protocol === "file:"
-      ? hashHistory
-      : undefined,
+  history: hashHistory,
 });
 
 // Register the router instance for type safety
