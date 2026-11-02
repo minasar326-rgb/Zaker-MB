@@ -156,6 +156,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    // تفعيل حفظ البيانات المحلي بشكل دائم أوفلاين
+    if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().catch(() => {});
+    }
     try {
       const raw =
         localStorage.getItem(KEY) ||
