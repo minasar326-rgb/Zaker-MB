@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>ذاكر - تنظيم اليوم الدراسي وجدول المذاكرة والمهام اليومية</title>
+    <meta name="description" content="ذاكر: تطبيق للمذاكرة وتحديد جداول للمهام اليومية والمذاكرة اليومية وتنظيم اليوم الدراسي والواجبات المدرسية - يعمل أوفلاين 100% بدون إنترنت." />
+    <meta name="theme-color" content="#f26430" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="ذاكر" />
+    <meta name="application-name" content="ذاكر" />
+
+    <link rel="icon" type="image/png" href="./favicon.png" />
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="manifest" href="./manifest.json" />
+
+    <!-- خطوط عربية محلية 100% بدون أي طلبات خارجية أو انترنت -->
+    <link rel="stylesheet" href="./fonts/fonts.css" />
+
+    <script>
+      if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+        var hasControllerOnStart = !!navigator.serviceWorker.controller;
+        var refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+          if (hasControllerOnStart && !refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        });
+
+        var swBase = window.location.pathname;
+        if (!swBase.endsWith('/')) {
+          var lastSlash = swBase.lastIndexOf('/');
+          var lastSegment = lastSlash !== -1 ? swBase.substring(lastSlash + 1) : swBase;
+          if (lastSegment.indexOf('.') === -1) {
+            swBase = swBase + '/';
+          } else {
+            swBase = swBase.substring(0, lastSlash + 1);
+          }
+        }
+        if (!swBase || swBase === '') swBase = './';
+
+        navigator.serviceWorker.register(swBase + 'sw.js', { scope: swBase }).then(function(reg) {
+          console.log('[Zaker SW] Service Worker registered with scope:', reg.scope);
+          reg.update().catch(function() {});
+          reg.addEventListener('updatefound', function() {
+            var newWorker = reg.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', function() {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                }
+              });
+            }
+          });
+          if ('sync' in reg && reg.sync) {
+            reg.sync.register('sync-tasks').catch(function() {});
+          }
+          if ('periodicSync' in reg && reg.periodicSync) {
+            reg.periodicSync.register('daily-motivation-sync', { minInterval: 12 * 60 * 60 * 1000 }).catch(function() {});
+            reg.periodicSync.register('daily-schedule-sync', { minInterval: 24 * 60 * 60 * 1000 }).catch(function() {});
+          }
+        }).catch(function(err) {
+          console.warn('[Zaker SW] Scope fallback to relative:', err);
+          navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(function() {});
+        });
+
+        if (navigator.storage && navigator.storage.persist) {
+          navigator.storage.persist().catch(function() {});
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
