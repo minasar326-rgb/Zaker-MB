@@ -12,11 +12,20 @@ import {
   Play,
   Plus,
   Printer,
+  RefreshCw,
   Sparkles,
   Trash2,
   User,
+  Volume2,
   X,
 } from "lucide-react";
+import { playMotivationChime } from "@/lib/audio";
+import {
+  getDailyMotivation,
+  getRandomMotivation,
+  sendDailyMotivationNotification,
+  type EncouragementQuote,
+} from "@/lib/motivation";
 import { useEffect, useState } from "react";
 import { colorBg } from "@/components/Shell";
 import { dayName, getGreeting } from "@/lib/i18n";
@@ -66,6 +75,51 @@ function Index() {
   const [today, setToday] = useState(0);
   const [perm, setPerm] = useState<string>("default");
   const [planDraft, setPlanDraft] = useState<PlanDraft | null>(null);
+
+  // Daily Motivation state
+  const [motivationQuote, setMotivationQuote] = useState<EncouragementQuote>(() =>
+    getDailyMotivation(studentName)
+  );
+  const [isPlayingChime, setIsPlayingChime] = useState(false);
+  const [motivationNotifSent, setMotivationNotifSent] = useState(false);
+
+  useEffect(() => {
+    setMotivationQuote(getDailyMotivation(studentName));
+  }, [studentName]);
+
+  useEffect(() => {
+    if (ready && perm === "granted") {
+      sendDailyMotivationNotification({ studentName, force: false }).then((sent) => {
+        if (sent) setMotivationNotifSent(true);
+      });
+    }
+  }, [ready, perm, studentName]);
+
+  const handlePlayChime = () => {
+    setIsPlayingChime(true);
+    playMotivationChime();
+    setTimeout(() => setIsPlayingChime(false), 1800);
+  };
+
+  const handleNextQuote = () => {
+    setMotivationQuote(getRandomMotivation(studentName, motivationQuote.id));
+  };
+
+  const handleSendNotification = async () => {
+    if (perm !== "granted") {
+      if ("Notification" in window) {
+        const result = await Notification.requestPermission();
+        setPerm(result);
+        if (result === "granted") {
+          sendDailyMotivationNotification({ studentName, quote: motivationQuote, force: true });
+          setMotivationNotifSent(true);
+        }
+      }
+    } else {
+      sendDailyMotivationNotification({ studentName, quote: motivationQuote, force: true });
+      setMotivationNotifSent(true);
+    }
+  };
 
   // Student name modal
   const [nameModalOpen, setNameModalOpen] = useState(false);
@@ -238,6 +292,62 @@ function Index() {
             <BellRing className="size-4" /> {t("notifOn")}
           </p>
         )}
+      </section>
+
+      {/* Daily Encouragement & Distinctive Chime Card */}
+      <section className="pop-card bg-gradient-to-r from-amber-50 via-orange-50 to-amber-100/70 border-3 border-foreground p-5 md:p-6 relative overflow-hidden shadow-[var(--shadow-pop)] no-print">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-primary text-primary-foreground px-3 py-0.5 text-xs font-black shadow-[var(--shadow-pop-sm)]">
+              <Sparkles className="size-3.5 animate-spin" />
+              <span>رسالة اليوم التشجيعية 🌟</span>
+            </div>
+            
+            <p className="text-lg md:text-xl font-extrabold text-foreground leading-relaxed">
+              "{motivationQuote.text}"
+            </p>
+            
+            {motivationQuote.tip && (
+              <p className="text-xs md:text-sm font-bold text-muted-foreground flex items-center gap-1.5 pt-1">
+                <span className="text-primary font-black">💡 نصيحة اليوم:</span> {motivationQuote.tip}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0 pt-2 md:pt-0">
+            <button
+              type="button"
+              onClick={handlePlayChime}
+              className={`pop-btn text-xs md:text-sm font-black flex items-center gap-2 ${
+                isPlayingChime ? "bg-accent scale-95" : "bg-card"
+              }`}
+              title="استمع لنغمة التشجيع المميزة"
+            >
+              <Volume2 className={`size-4 text-primary ${isPlayingChime ? "animate-bounce" : ""}`} />
+              {isPlayingChime ? "جارِ العزف 🎵" : "النغمة المميزة 🎵"}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleNextQuote}
+              className="pop-btn bg-card text-xs md:text-sm font-black flex items-center gap-2"
+              title="عرض رسالة تشجيعية أخرى"
+            >
+              <RefreshCw className="size-4 text-secondary-foreground" />
+              رسالة أخرى 🎲
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSendNotification}
+              className="pop-btn bg-primary text-primary-foreground text-xs md:text-sm font-black flex items-center gap-2"
+              title="إرسال إشعار تشجيعي مع النغمة"
+            >
+              <BellRing className="size-4" />
+              {motivationNotifSent ? "أُرسل الإشعار اليوم ✓" : "إشعار تشجيع 🔔"}
+            </button>
+          </div>
+        </div>
       </section>
 
       {/* Overview Stats */}

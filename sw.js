@@ -1,5 +1,5 @@
 // Zaker (ذاكر) - 100% Offline-First Service Worker
-const CACHE_NAME = "zaker-v2";
+const CACHE_NAME = "zaker-v3";
 
 // Helper to resolve URLs relative to this Service Worker script's directory
 const getUrl = (rel) => new URL(rel, self.location.href).href;
@@ -11,10 +11,14 @@ const PRECACHE_ASSETS = [
   getUrl("./index.html?source=pwa"),
   getUrl("./?source=pwa"),
   getUrl("./manifest.json"),
+  getUrl("./manifest-BDmtbVmz.json"),
   getUrl("./favicon.png"),
   getUrl("./favicon.ico"),
   getUrl("./favicon.svg"),
   getUrl("./apple-touch-icon.png"),
+  getUrl("./icons/zaker-study-192.png"),
+  getUrl("./icons/zaker-study-512.png"),
+  getUrl("./icons/zaker-study-maskable.png"),
   getUrl("./icons/zaker-192.png"),
   getUrl("./icons/zaker-512.png"),
   getUrl("./icons/zaker-maskable.png"),
@@ -64,55 +68,69 @@ self.addEventListener("activate", (event) => {
           }
         })
       )
-    ).then(() => self.clients.claim())
+    ).then(() => {
+      console.log("[Zaker SW] Claiming clients immediately");
+      return self.clients.claim();
+    })
   );
 });
 
-// 3. Fetch Event: 100% Offline-First Architecture
+// 3. Fetch Event: Strict 100% Offline-First Strategy
 self.addEventListener("fetch", (event) => {
   const req = event.request;
-  if (req.method !== "GET") return;
-  if (!req.url.startsWith("http://") && !req.url.startsWith("https://")) return;
+  const url = new URL(req.url);
 
-  // A) Navigation requests (opening the app or reloading):
-  // ALWAYS return cached index.html FIRST (Cache-First) so the app opens instantly 100% offline!
-  if (req.mode === "navigate" || req.headers.get("accept")?.includes("text/html")) {
+  // Only handle HTTP/HTTPS GET requests
+  if (req.method !== "GET" || (!url.protocol.startsWith("http:") && !url.protocol.startsWith("https:"))) {
+    return;
+  }
+
+  // A) Navigation Requests (HTML / Page Loads):
+  // Cache-First with Background Revalidation for zero-lag offline startup!
+  if (req.mode === "navigate" || req.destination === "document") {
     event.respondWith(
-      (async () => {
-        const cache = await caches.open(CACHE_NAME);
-
-        // Check cache for index.html or root
-        const cached =
-          (await cache.match(req, { ignoreSearch: true })) ||
-          (await cache.match(getUrl("./index.html"))) ||
-          (await cache.match(getUrl("./"))) ||
-          (await cache.match(getUrl("./?source=pwa")));
-
-        // Background revalidation (stale-while-revalidate) if online
-        const bgUpdate = fetch(req).then(async (netResp) => {
-          if (netResp && netResp.status === 200) {
-            await cache.put(req, netResp.clone());
-            await cache.put(getUrl("./index.html"), netResp.clone());
-            await cache.put(getUrl("./"), netResp.clone());
-          }
-          return netResp;
-        }).catch(() => null);
-
-        // If cached, return it IMMEDIATELY! (Zero lag, 100% offline!)
-        if (cached) {
-          return cached;
+      caches.match(req).then((cachedResponse) => {
+        if (cachedResponse) {
+          // Revalidate in background if online
+          fetch(req).then((netResp) => {
+            if (netResp && netResp.status === 200) {
+              caches.open(CACHE_NAME).then((cache) => cache.put(req, netResp));
+            }
+          }).catch(() => {});
+          return cachedResponse;
         }
 
-        // If not in cache yet (initial load), wait for network
-        const net = await bgUpdate;
-        if (net) return net;
+        // Try generic root or index.html from cache
+        return caches.match(getUrl("./index.html")).then((indexCached) => {
+          if (indexCached) {
+            fetch(req).then((netResp) => {
+              if (netResp && netResp.status === 200) {
+                caches.open(CACHE_NAME).then((cache) => cache.put(req, netResp));
+              }
+            }).catch(() => {});
+            return indexCached;
+          }
 
-        // Emergency fallback: return index.html from cache
-        const fallback = await cache.match(getUrl("./index.html"));
-        if (fallback) return fallback;
-
-        return new Response("App is loading...", { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } });
-      })()
+          // Fetch from network if not cached yet
+          return fetch(req).then((netResp) => {
+            if (netResp && netResp.status === 200) {
+              const copy = netResp.clone();
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(req, copy);
+                cache.put(getUrl("./index.html"), copy.clone());
+              });
+            }
+            return netResp;
+          }).catch(async () => {
+            // Ultimate fallback to index.html or ./
+            const fallback = (await caches.match(getUrl("./"))) || (await caches.match(getUrl("./index.html")));
+            if (fallback) return fallback;
+            return new Response("ذاكر متاح أوفلاين بالكامل", {
+              headers: { "Content-Type": "text/html; charset=utf-8" }
+            });
+          });
+        });
+      })
     );
     return;
   }
@@ -140,7 +158,7 @@ self.addEventListener("fetch", (event) => {
         return netResp;
       }).catch(async () => {
         if (req.headers.get("accept")?.includes("image/")) {
-          const fallbackIcon = await caches.match(getUrl("./icons/zaker-192.png"));
+          const fallbackIcon = await caches.match(getUrl("./icons/zaker-study-192.png"));
           if (fallbackIcon) return fallbackIcon;
         }
         return new Response("Offline asset", { status: 503 });
@@ -149,24 +167,53 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-// 4. Background Sync & Periodic Sync & Push (for PWA capabilities)
+// 4. Daily Motivational Quotes for Push & Periodic Sync
+const SW_MOTIVATION_MESSAGES = [
+  "صباح التميز والهمة يا بطل! 🌟 يوم جديد وفرصة لتصنع مستقبلك الجميل خطوة بخطوة.",
+  "تذكّر دائمًا: كل دقيقة تركيز ومذاكرة اليوم هي استثمار عظيم في حلمك الكبير! 💪",
+  "لا تنتظر المزاج المثالي، ابدأ بأول مهمة دراسية والحماس سيأتي تلقائيًا! 🚀",
+  "رحلة النجاح تبدأ بصفحة تذاكرها الآن بكل إخلاص.. أنت قدها! 📖✨",
+  "كل الناجحين مروا بأيام صعبة واجتهدوا بصبر.. استمر فهدفك يستحق! 🎯",
+  "التركيز مثل العضلة تقوى بالتدريب.. خذ نفسًا عميقًا وابدأ جلسة تركيز قوية! 🧠⚡",
+  "إنجاز مهامك اليوم هو سر راحتك وثقتك بنفسك غدًا.. جدولك بانتظارك! 🏆"
+];
+
+function getRandomMotivation() {
+  return SW_MOTIVATION_MESSAGES[Math.floor(Math.random() * SW_MOTIVATION_MESSAGES.length)];
+}
+
+// 5. Background Sync & Periodic Sync & Push (for PWA capabilities)
 self.addEventListener("sync", (event) => {
   event.waitUntil(Promise.resolve());
 });
 
 self.addEventListener("periodicsync", (event) => {
-  event.waitUntil(Promise.resolve());
+  if (event.tag === "daily-motivation-sync" || event.tag === "daily-schedule-sync") {
+    event.waitUntil(
+      self.registration.showNotification("ذاكر - رسالة اليوم التشجيعية 🌟", {
+        body: getRandomMotivation(),
+        icon: getUrl("./icons/zaker-study-192.png"),
+        badge: getUrl("./icons/zaker-study-192.png"),
+        dir: "rtl",
+        lang: "ar",
+        tag: "zaker-daily-motivation",
+        vibrate: [150, 75, 150, 75, 300]
+      })
+    );
+  }
 });
 
 self.addEventListener("push", (event) => {
-  const payload = event.data ? event.data.text() : "تنبيه من تطبيق ذاكر: حان وقت المذاكرة والتركيز 📚";
+  const payload = event.data ? event.data.text() : getRandomMotivation();
   event.waitUntil(
-    self.registration.showNotification("ذاكر", {
+    self.registration.showNotification("ذاكر - رسالة تشجيع 🌟", {
       body: payload,
-      icon: getUrl("./icons/zaker-192.png"),
-      badge: getUrl("./icons/zaker-192.png"),
+      icon: getUrl("./icons/zaker-study-192.png"),
+      badge: getUrl("./icons/zaker-study-192.png"),
       dir: "rtl",
-      lang: "ar"
+      lang: "ar",
+      tag: "zaker-daily-motivation",
+      vibrate: [150, 75, 150, 75, 300]
     })
   );
 });
@@ -188,4 +235,4 @@ self.addEventListener("message", (event) => {
   if (event.data && (event.data.type === "SKIP_WAITING" || event.data === "skipWaiting")) {
     self.skipWaiting();
   }
-});
+});\n

@@ -26,17 +26,19 @@
   "prefer_related_applications": false,
   "related_applications": [
     {
-      "platform": "webapp",
-      "url": "./manifest.json",
-      "id": "https://minasar326-rgb.github.io/Zaker-MB/"
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.zaker.studyapp",
+      "id": "com.zaker.studyapp"
+    },
+    {
+      "platform": "windows",
+      "url": "https://apps.microsoft.com/detail/zaker-study",
+      "id": "ZakerStudy.DailyPlanner"
     }
   ],
   "scope_extensions": [
     {
       "origin": "https://minasar326-rgb.github.io"
-    },
-    {
-      "origin": "https://*.github.io"
     }
   ],
   "launch_handler": {
@@ -112,19 +114,19 @@
   ],
   "icons": [
     {
-      "src": "./icons/zaker-192.png",
+      "src": "./icons/zaker-study-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icons/zaker-512.png",
+      "src": "./icons/zaker-study-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icons/zaker-maskable.png",
+      "src": "./icons/zaker-study-maskable.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -154,7 +156,7 @@
       "url": "./?action=schedule",
       "icons": [
         {
-          "src": "./icons/zaker-192.png",
+          "src": "./icons/zaker-study-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -167,7 +169,7 @@
       "url": "./?action=new_task",
       "icons": [
         {
-          "src": "./icons/zaker-192.png",
+          "src": "./icons/zaker-study-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -180,7 +182,7 @@
       "url": "./?action=timer",
       "icons": [
         {
-          "src": "./icons/zaker-192.png",
+          "src": "./icons/zaker-study-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
