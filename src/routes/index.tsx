@@ -21,6 +21,10 @@ import {
 } from "lucide-react";
 import { playMotivationChime } from "@/lib/audio";
 import {
+  send5HourTaskReminderNotification,
+  sendDailyMorningNotification,
+} from "@/lib/notifications";
+import {
   getDailyMotivation,
   getRandomMotivation,
   sendDailyMotivationNotification,
@@ -103,6 +107,26 @@ function Index() {
 
   const handleNextQuote = () => {
     setMotivationQuote(getRandomMotivation(studentName, motivationQuote.id));
+  };
+
+  const [taskReminderSent, setTaskReminderSent] = useState(false);
+
+  const handleTest5HourReminder = async () => {
+    if (perm !== "granted") {
+      if ("Notification" in window) {
+        const result = await Notification.requestPermission();
+        setPerm(result);
+        if (result === "granted") {
+          send5HourTaskReminderNotification({ tasks, studentName, force: true });
+          setTaskReminderSent(true);
+          setTimeout(() => setTaskReminderSent(false), 3000);
+        }
+      }
+    } else {
+      send5HourTaskReminderNotification({ tasks, studentName, force: true });
+      setTaskReminderSent(true);
+      setTimeout(() => setTaskReminderSent(false), 3000);
+    }
   };
 
   const handleSendNotification = async () => {
@@ -346,7 +370,28 @@ function Index() {
               <BellRing className="size-4" />
               {motivationNotifSent ? "أُرسل الإشعار اليوم ✓" : "إشعار تشجيع 🔔"}
             </button>
+
+            <button
+              type="button"
+              onClick={handleTest5HourReminder}
+              className="pop-btn bg-sky text-foreground text-xs md:text-sm font-black flex items-center gap-2"
+              title="تجربة إشعار تذكير المهام كل 5 ساعات خارج التطبيق"
+            >
+              <Clock className="size-4 text-primary" />
+              {taskReminderSent ? "تم إرسال تذكير المهام ✓" : "تذكير المهام (كل 5 س) ⏰"}
+            </button>
           </div>
+        </div>
+
+        {/* Automatic Background Notifications Status Footer */}
+        <div className="mt-4 pt-3 border-t-2 border-foreground/15 flex flex-wrap items-center justify-between text-xs font-bold text-foreground/85 gap-2">
+          <div className="flex items-center gap-2">
+            <span className="inline-block size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>الجدولة التلقائية مفعلة: إشعار تحفيز يومي + تذكير تلقائي بالمهام كل 5 ساعات خارج التطبيق</span>
+          </div>
+          <span className="bg-card px-2.5 py-0.5 rounded-full border border-foreground/20 text-muted-foreground font-extrabold">
+            {pending.length > 0 ? `${pending.length} مهام متبقية بانتظارك 📚` : "جميع المهام مكتملة! 🎉"}
+          </span>
         </div>
       </section>
 

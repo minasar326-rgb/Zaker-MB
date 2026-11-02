@@ -1,5 +1,5 @@
-// Zaker (ذاكر) - 100% Offline-First Service Worker
-const CACHE_NAME = "zaker-v3";
+// Zaker (ذاكر) - 100% Offline-First Service Worker with Background 5h Tasks & Daily Notifications
+const CACHE_NAME = "zaker-v4";
 
 // Helper to resolve URLs relative to this Service Worker script's directory
 const getUrl = (rel) => new URL(rel, self.location.href).href;
@@ -11,7 +11,7 @@ const PRECACHE_ASSETS = [
   getUrl("./index.html?source=pwa"),
   getUrl("./?source=pwa"),
   getUrl("./manifest.json"),
-  getUrl("./manifest-BDmtbVmz.json"),
+  getUrl("./manifest-sp2RgcW1.json"),
   getUrl("./favicon.png"),
   getUrl("./favicon.ico"),
   getUrl("./favicon.svg"),
@@ -80,18 +80,15 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // Only handle HTTP/HTTPS GET requests
   if (req.method !== "GET" || (!url.protocol.startsWith("http:") && !url.protocol.startsWith("https:"))) {
     return;
   }
 
-  // A) Navigation Requests (HTML / Page Loads):
-  // Cache-First with Background Revalidation for zero-lag offline startup!
+  // Navigation Requests: Cache-First with Background Revalidation
   if (req.mode === "navigate" || req.destination === "document") {
     event.respondWith(
       caches.match(req).then((cachedResponse) => {
         if (cachedResponse) {
-          // Revalidate in background if online
           fetch(req).then((netResp) => {
             if (netResp && netResp.status === 200) {
               caches.open(CACHE_NAME).then((cache) => cache.put(req, netResp));
@@ -100,7 +97,6 @@ self.addEventListener("fetch", (event) => {
           return cachedResponse;
         }
 
-        // Try generic root or index.html from cache
         return caches.match(getUrl("./index.html")).then((indexCached) => {
           if (indexCached) {
             fetch(req).then((netResp) => {
@@ -111,7 +107,6 @@ self.addEventListener("fetch", (event) => {
             return indexCached;
           }
 
-          // Fetch from network if not cached yet
           return fetch(req).then((netResp) => {
             if (netResp && netResp.status === 200) {
               const copy = netResp.clone();
@@ -122,7 +117,6 @@ self.addEventListener("fetch", (event) => {
             }
             return netResp;
           }).catch(async () => {
-            // Ultimate fallback to index.html or ./
             const fallback = (await caches.match(getUrl("./"))) || (await caches.match(getUrl("./index.html")));
             if (fallback) return fallback;
             return new Response("ذاكر متاح أوفلاين بالكامل", {
@@ -135,12 +129,10 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // B) Static Assets (JS, CSS, Fonts, Images, Icons):
-  // Cache-First with Background Update
+  // Static Assets: Cache-First with Background Update
   event.respondWith(
     caches.match(req, { ignoreSearch: true }).then((cachedResponse) => {
       if (cachedResponse) {
-        // Update asset in background if network is available
         fetch(req).then((netResp) => {
           if (netResp && netResp.status === 200) {
             caches.open(CACHE_NAME).then((cache) => cache.put(req, netResp));
@@ -149,7 +141,6 @@ self.addEventListener("fetch", (event) => {
         return cachedResponse;
       }
 
-      // If not in cache, fetch from network and cache for next time
       return fetch(req).then((netResp) => {
         if (netResp && netResp.status === 200) {
           const copy = netResp.clone();
@@ -167,72 +158,194 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-// 4. Daily Motivational Quotes for Push & Periodic Sync
-const SW_MOTIVATION_MESSAGES = [
-  "صباح التميز والهمة يا بطل! 🌟 يوم جديد وفرصة لتصنع مستقبلك الجميل خطوة بخطوة.",
-  "تذكّر دائمًا: كل دقيقة تركيز ومذاكرة اليوم هي استثمار عظيم في حلمك الكبير! 💪",
-  "لا تنتظر المزاج المثالي، ابدأ بأول مهمة دراسية والحماس سيأتي تلقائيًا! 🚀",
-  "رحلة النجاح تبدأ بصفحة تذاكرها الآن بكل إخلاص.. أنت قدها! 📖✨",
-  "كل الناجحين مروا بأيام صعبة واجتهدوا بصبر.. استمر فهدفك يستحق! 🎯",
-  "التركيز مثل العضلة تقوى بالتدريب.. خذ نفسًا عميقًا وابدأ جلسة تركيز قوية! 🧠⚡",
-  "إنجاز مهامك اليوم هو سر راحتك وثقتك بنفسك غدًا.. جدولك بانتظارك! 🏆"
-];
+// 4. IndexedDB Access in Service Worker
+const DB_NAME = "zaker_db";
+const DB_VERSION = 1;
+const STORE_NAME = "sync_data";
 
-function getRandomMotivation() {
-  return SW_MOTIVATION_MESSAGES[Math.floor(Math.random() * SW_MOTIVATION_MESSAGES.length)];
+function openZakerDB() {
+  return new Promise((resolve, reject) => {
+    if (typeof indexedDB === "undefined") {
+      reject(new Error("IndexedDB not available"));
+      return;
+    }
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = () => {
+      if (!req.result.objectStoreNames.contains(STORE_NAME)) {
+        req.result.createObjectStore(STORE_NAME);
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
 }
 
-// 5. Background Sync & Periodic Sync & Push (for PWA capabilities)
-self.addEventListener("sync", (event) => {
-  event.waitUntil(Promise.resolve());
-});
+function getSyncData(key) {
+  return openZakerDB()
+    .then((db) => {
+      return new Promise((resolve) => {
+        try {
+          const tx = db.transaction(STORE_NAME, "readonly");
+          const store = tx.objectStore(STORE_NAME);
+          const req = store.get(key);
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => resolve(null);
+        } catch (e) {
+          resolve(null);
+        }
+      });
+    })
+    .catch(() => null);
+}
 
-self.addEventListener("periodicsync", (event) => {
-  if (event.tag === "daily-motivation-sync" || event.tag === "daily-schedule-sync") {
-    event.waitUntil(
-      self.registration.showNotification("ذاكر - رسالة اليوم التشجيعية 🌟", {
-        body: getRandomMotivation(),
-        icon: getUrl("./icons/zaker-study-192.png"),
-        badge: getUrl("./icons/zaker-study-192.png"),
-        dir: "rtl",
-        lang: "ar",
-        tag: "zaker-daily-motivation",
-        vibrate: [150, 75, 150, 75, 300]
-      })
-    );
-  }
-});
+function setSyncData(key, value) {
+  return openZakerDB()
+    .then((db) => {
+      return new Promise((resolve) => {
+        try {
+          const tx = db.transaction(STORE_NAME, "readwrite");
+          const store = tx.objectStore(STORE_NAME);
+          store.put(value, key);
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+        } catch (e) {
+          resolve(false);
+        }
+      });
+    })
+    .catch(() => false);
+}
 
-self.addEventListener("push", (event) => {
-  const payload = event.data ? event.data.text() : getRandomMotivation();
-  event.waitUntil(
-    self.registration.showNotification("ذاكر - رسالة تشجيع 🌟", {
-      body: payload,
+// 5. Daily Motivational Messages
+const SW_MOTIVATION_MESSAGES = [
+  "صباح التميز والهمة يا {name}! 🌟 يوم جديد لتصنع مستقبلك الجميل خطوة بخطوة.",
+  "تذكّر دائمًا: كل دقيقة تركيز ومذاكرة اليوم هي استثمار عظيم في حلمك يا {name}! 💪",
+  "لا تنتظر المزاج المثالي يا {name}، ابدأ بأول مهمة دراسية والحماس سيأتي تلقائيًا! 🚀",
+  "رحلة النجاح تبدأ بصفحة تذاكرها الآن بكل إخلاص.. أنت قدها يا {name}! 📖✨",
+  "كل الناجحين مروا بأيام صعبة واجتهدوا بصبر.. استمر فهدفك يستحق يا {name}! 🎯",
+  "التركيز مثل العضلة تقوى بالتدريب.. خذ نفسًا عميقًا وابدأ جلسة تركيز قوية! 🧠⚡",
+  "إنجاز مهامك اليوم هو سر راحتك وثقتك بنفسك غدًا.. جدولك بانتظارك يا {name}! 🏆"
+];
+
+async function triggerDailyMotivationNotification(force = false) {
+  try {
+    const studentName = (await getSyncData("studentName")) || "يا بطل";
+    const rawQuote = SW_MOTIVATION_MESSAGES[Math.floor(Math.random() * SW_MOTIVATION_MESSAGES.length)];
+    const quote = rawQuote.replace(/\{name\}/g, studentName);
+
+    await self.registration.showNotification("ذاكر - رسالة اليوم التشجيعية 🌟", {
+      body: quote,
       icon: getUrl("./icons/zaker-study-192.png"),
       badge: getUrl("./icons/zaker-study-192.png"),
       dir: "rtl",
       lang: "ar",
       tag: "zaker-daily-motivation",
-      vibrate: [150, 75, 150, 75, 300]
-    })
-  );
+      renotify: true,
+      vibrate: [150, 75, 150, 75, 300],
+      data: { url: getUrl("./") }
+    });
+  } catch (err) {
+    console.warn("[Zaker SW] Daily motivation notification error:", err);
+  }
+}
+
+async function trigger5HourTasksReminderNotification(force = false) {
+  try {
+    const tasks = (await getSyncData("tasks")) || [];
+    const studentName = (await getSyncData("studentName")) || "يا بطل";
+    const pending = Array.isArray(tasks) ? tasks.filter((t) => !t.done) : [];
+
+    let title = "ذاكر - تذكير المهام كل 5 ساعات ⏰";
+    let body = "";
+
+    if (pending.length === 0) {
+      title = `ذاكر - رائع جداً يا ${studentName}! 🌟`;
+      body = "جميع مهامك الدراسية مكتملة حتى الآن! استمتع بوقتك أو أضف مراجعة جديدة.";
+    } else if (pending.length === 1) {
+      const t = pending[0];
+      const sub = t.subject ? `في مادة ${t.subject}` : "";
+      body = `يا ${studentName}، لديك مهمة دراسية بانتظارك: "${t.title}" ${sub}.. أنجزها الآن لتشعر بالراحة! 💪`;
+    } else {
+      const first = pending[0];
+      const sub = first.subject ? `(${first.subject})` : "";
+      body = `يا ${studentName}، لديك ${pending.length} مهام دراسية متبقية لليوم! ابدأ بالمهمة الأولى: "${first.title}" ${sub} 🚀`;
+    }
+
+    await self.registration.showNotification(title, {
+      body: body,
+      icon: getUrl("./icons/zaker-study-192.png"),
+      badge: getUrl("./icons/zaker-study-192.png"),
+      dir: "rtl",
+      lang: "ar",
+      tag: "zaker-5h-task-reminder",
+      renotify: true,
+      vibrate: [200, 100, 200, 100, 300],
+      data: { url: getUrl("./?action=tasks") }
+    });
+  } catch (err) {
+    console.warn("[Zaker SW] 5h task reminder notification error:", err);
+  }
+}
+
+// 6. Background Periodic Sync (Browser background worker)
+self.addEventListener("periodicsync", (event) => {
+  console.log("[Zaker SW] PeriodicSync triggered with tag:", event.tag);
+  if (event.tag === "daily-motivation" || event.tag === "daily-motivation-sync" || event.tag === "daily-schedule-sync") {
+    event.waitUntil(triggerDailyMotivationNotification());
+  } else if (event.tag === "tasks-reminder-5h" || event.tag === "tasks-5h-sync") {
+    event.waitUntil(trigger5HourTasksReminderNotification());
+  }
 });
 
+// 7. Background One-Shot Sync
+self.addEventListener("sync", (event) => {
+  if (event.tag === "sync-tasks") {
+    event.waitUntil(Promise.resolve());
+  }
+});
+
+// 8. Push Event
+self.addEventListener("push", (event) => {
+  event.waitUntil(triggerDailyMotivationNotification());
+});
+
+// 9. Notification Click Handler
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const urlToOpen = getUrl("./");
+  const targetUrl = (event.notification.data && event.notification.data.url) || getUrl("./");
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
       for (const client of windowClients) {
-        if ("focus" in client) return client.focus();
+        if ("focus" in client) {
+          if (client.url === targetUrl) {
+            return client.focus();
+          } else if ("navigate" in client) {
+            client.navigate(targetUrl);
+            return client.focus();
+          }
+        }
       }
-      if (clients.openWindow) return clients.openWindow(urlToOpen);
+      if (clients.openWindow) return clients.openWindow(targetUrl);
     })
   );
 });
 
+// 10. Message Event from Main Window
 self.addEventListener("message", (event) => {
-  if (event.data && (event.data.type === "SKIP_WAITING" || event.data === "skipWaiting")) {
+  if (!event.data) return;
+  const data = event.data;
+  if (data.type === "SKIP_WAITING" || data === "skipWaiting") {
     self.skipWaiting();
+  } else if (data.type === "SYNC_TASKS") {
+    event.waitUntil(
+      Promise.all([
+        setSyncData("tasks", data.tasks || []),
+        data.studentName ? setSyncData("studentName", data.studentName) : Promise.resolve()
+      ])
+    );
+  } else if (data.type === "TEST_5H_TASK_NOTIFICATION") {
+    event.waitUntil(trigger5HourTasksReminderNotification(true));
+  } else if (data.type === "TEST_DAILY_MOTIVATION") {
+    event.waitUntil(triggerDailyMotivationNotification(true));
   }
 });\n

@@ -2,6 +2,11 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { toast } from "sonner";
 import { playChime } from "./audio";
 import { translate, type Key, type Lang } from "./i18n";
+import {
+  syncTasksToServiceWorker,
+  registerPeriodicSyncs,
+  startForegroundBackgroundIntervals,
+} from "./notifications";
 
 export const COLORS = ["coral", "sun", "mint", "sky", "grape", "rose"] as const;
 export type Color = (typeof COLORS)[number];
@@ -196,6 +201,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     document.documentElement.lang = state.lang;
     document.documentElement.dir = state.lang === "ar" ? "rtl" : "ltr";
   }, [state, ready]);
+
+  // Synchronize tasks and register background periodic notifications
+  useEffect(() => {
+    if (!ready) return;
+    registerPeriodicSyncs();
+    syncTasksToServiceWorker(state.tasks, state.studentName);
+    const stopIntervals = startForegroundBackgroundIntervals(
+      () => stateRef.current.tasks,
+      () => stateRef.current.studentName
+    );
+    return () => stopIntervals();
+  }, [ready]);
+
+  useEffect(() => {
+    if (ready) {
+      syncTasksToServiceWorker(state.tasks, state.studentName);
+    }
+  }, [state.tasks, state.studentName, ready]);
 
   const t = useCallback((k: Key) => translate(state.lang, k), [state.lang]);
 
