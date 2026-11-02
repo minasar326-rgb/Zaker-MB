@@ -44,7 +44,7 @@
         }
         if (!swBase || swBase === '') swBase = './';
 
-        navigator.serviceWorker.register(swBase + 'sw.js', { scope: swBase }).then(function(reg) {
+        navigator.serviceWorker.register(swBase + 'sw.js', { scope: swBase, updateViaCache: 'none' }).then(function(reg) {
           console.log('[Zaker SW] Service Worker registered with scope:', reg.scope);
           reg.update().catch(function() {});
           reg.addEventListener('updatefound', function() {
