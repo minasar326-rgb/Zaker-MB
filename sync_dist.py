@@ -44,11 +44,12 @@ if os.path.exists("dist/index.html"):
     with open("dist/index.html", "w", encoding="utf-8") as f:
         f.write(html)
     
-    # Copy to root index.html, Zaker.html, 404.html
+    # Copy to root index.html, Zaker.html, 404.html and dist/404.html
     copy_if_exists("dist/index.html", "index.html")
     copy_if_exists("dist/index.html", "Zaker.html")
     copy_if_exists("dist/index.html", "404.html")
-    print("Copied updated dist/index.html to index.html, Zaker.html, 404.html")
+    copy_if_exists("dist/index.html", "dist/404.html")
+    print("Copied updated dist/index.html to index.html, Zaker.html, 404.html, dist/404.html")
 
 # 5. Synchronize manifest.json across Arabic variants only (never overwrite manifest-en or manifest-el)
 with open("public/manifest.json", "r", encoding="utf-8") as f:

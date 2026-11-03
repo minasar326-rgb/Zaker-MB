@@ -105,7 +105,7 @@ self.addEventListener("fetch", (event) => {
   // Navigation Requests: Cache-First with Background Revalidation
   if (req.mode === "navigate" || req.destination === "document") {
     event.respondWith(
-      caches.match(req).then((cachedResponse) => {
+      caches.match(req, { ignoreSearch: true }).then((cachedResponse) => {
         if (cachedResponse) {
           fetch(req).then((netResp) => {
             if (netResp && netResp.status === 200) {
@@ -431,10 +431,16 @@ self.addEventListener("message", (event) => {
         setSyncData("tasks", data.tasks || []),
         data.studentName ? setSyncData("studentName", data.studentName) : Promise.resolve(),
         data.lang ? setSyncData("lang", data.lang) : Promise.resolve()
-      ])
+      ]).then(() => {
+        if (event.ports && event.ports[0]) event.ports[0].postMessage({ success: true });
+      })
     );
   } else if (data.type === "SET_LANG") {
-    event.waitUntil(setSyncData("lang", data.lang || "ar"));
+    event.waitUntil(
+      setSyncData("lang", data.lang || "ar").then((res) => {
+        if (event.ports && event.ports[0]) event.ports[0].postMessage({ success: res });
+      })
+    );
   } else if (data.type === "TEST_5H_TASK_NOTIFICATION") {
     event.waitUntil(trigger5HourTasksReminderNotification(true));
   } else if (data.type === "TEST_DAILY_MOTIVATION") {

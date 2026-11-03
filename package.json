@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "python -c \"import shutil; shutil.copy2('index.source.html', 'index.html')\" && tsc -b && vite build && python sync_dist.py",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:offline": "node tools/offline-test.mjs"
   },
   "dependencies": {
     "@tanstack/react-router": "^1.170.46",
@@ -26,6 +27,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
     "oxlint": "^1.88.0",
+    "playwright": "^1.64.1",
     "typescript": "~6.0.3",
     "vite": "^8.3.4",
     "vite-plugin-singlefile": "^2.3.4"
