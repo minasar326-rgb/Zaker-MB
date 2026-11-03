@@ -1,4 +1,4 @@
-import os, shutil, glob
+import os, shutil, glob, re
 
 def copy_if_exists(src, dst):
     if os.path.exists(src):
@@ -21,11 +21,17 @@ for root, dirs, files in os.walk("public"):
         copy_if_exists(src, os.path.join(".", rel))
         copy_if_exists(src, os.path.join("dist", rel))
 
-# 3. Synchronize any hashed assets from dist/ into root
+# 3. Synchronize any hashed assets from dist/ into root (only if not already existing, ignore duplicate hashes)
 for f in glob.glob("dist/*.*"):
     base = os.path.basename(f)
-    if base != "index.html":
-        copy_if_exists(f, os.path.join(".", base))
+    if base == "index.html":
+        continue
+    # Ignore any file that has the same hash repeated (e.g. name-HASH-HASH.ext)
+    if re.search(r'-([A-Za-z0-9_-]{6,})-\1\.', base):
+        continue
+    target = os.path.join(".", base)
+    if not os.path.exists(target):
+        copy_if_exists(f, target)
 
 # 4. Standardize manifest link in dist/index.html
 if os.path.exists("dist/index.html"):
@@ -33,7 +39,6 @@ if os.path.exists("dist/index.html"):
         html = f.read()
     
     # Ensure manifest points to ./manifest.json
-    import re
     html = re.sub(r'<link rel="manifest" href="[^"]+"', '<link rel="manifest" href="./manifest.json"', html)
     
     with open("dist/index.html", "w", encoding="utf-8") as f:
@@ -45,14 +50,20 @@ if os.path.exists("dist/index.html"):
     copy_if_exists("dist/index.html", "404.html")
     print("Copied updated dist/index.html to index.html, Zaker.html, 404.html")
 
-# 5. Synchronize manifest.json across all variants
+# 5. Synchronize manifest.json across existing manifest variants only (no merged names)
 with open("public/manifest.json", "r", encoding="utf-8") as f:
     manifest_data = f.read()
 
-for m in glob.glob("*manifest*.*") + glob.glob("dist/*manifest*.*"):
-    if m.endswith(".json"):
-        with open(m, "w", encoding="utf-8") as f:
-            f.write(manifest_data)
+existing_manifests = set(glob.glob("manifest.json") + glob.glob("manifest-*.json") + 
+                         glob.glob("dist/manifest.json") + glob.glob("dist/manifest-*.json"))
+
+for m in existing_manifests:
+    base = os.path.basename(m)
+    # Ignore any merged names like manifest-*-*.json
+    if base.count("-") > 1:
+        continue
+    with open(m, "w", encoding="utf-8", newline="\n") as f:
+        f.write(manifest_data)
 
 # 6. Synchronize sw.js
 with open("public/sw.js", "r", encoding="utf-8") as f:

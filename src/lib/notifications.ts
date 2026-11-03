@@ -183,7 +183,7 @@ export async function send5HourTaskReminderNotification(options: {
         tag: "zaker-5h-task-reminder",
         renotify: true,
         vibrate: [200, 100, 200, 100, 300],
-        data: { url: "./?action=tasks" },
+        data: { url: "./#/tasks" },
       };
 
       if ("serviceWorker" in navigator && navigator.serviceWorker.ready) {

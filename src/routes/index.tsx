@@ -375,7 +375,7 @@ function Index() {
               type="button"
               onClick={handleTest5HourReminder}
               className="pop-btn bg-sky text-foreground text-xs md:text-sm font-black flex items-center gap-2"
-              title="تجربة إشعار تذكير المهام كل 5 ساعات خارج التطبيق"
+              title="تجربة إشعار تذكير المهام (يعمل أثناء فتح التطبيق، وقد يعمل في الخلفية على الأجهزة الداعمة)"
             >
               <Clock className="size-4 text-primary" />
               {taskReminderSent ? "تم إرسال تذكير المهام ✓" : "تذكير المهام (كل 5 س) ⏰"}
@@ -387,7 +387,7 @@ function Index() {
         <div className="mt-4 pt-3 border-t-2 border-foreground/15 flex flex-wrap items-center justify-between text-xs font-bold text-foreground/85 gap-2">
           <div className="flex items-center gap-2">
             <span className="inline-block size-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>الجدولة التلقائية مفعلة: إشعار تحفيز يومي + تذكير تلقائي بالمهام كل 5 ساعات خارج التطبيق</span>
+            <span>الجدولة التلقائية: إشعار تحفيز يومي + تذكير المهام كل 5 ساعات يعمل أثناء فتح التطبيق، وقد يعمل في الخلفية على الأجهزة والمتصفحات التي تدعم ذلك</span>
           </div>
           <span className="bg-card px-2.5 py-0.5 rounded-full border border-foreground/20 text-muted-foreground font-extrabold">
             {pending.length > 0 ? `${pending.length} مهام متبقية بانتظارك 📚` : "جميع المهام مكتملة! 🎉"}

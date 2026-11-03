@@ -1,13 +1,17 @@
 // Zaker (ذاكر) - 100% Offline-First Service Worker with Background 5h Tasks & Daily Notifications
-const CACHE_NAME = "zaker-v5";
+const CACHE_NAME = "zaker-v6";
 
 // Helper to resolve URLs relative to this Service Worker script's directory
 const getUrl = (rel) => new URL(rel, self.location.href).href;
 
-// Complete precache list of all essential application assets
-const PRECACHE_ASSETS = [
+// Mandatory core precache assets (installation fails and retries if either fails)
+const MANDATORY_PRECACHE_ASSETS = [
   getUrl("./"),
-  getUrl("./index.html"),
+  getUrl("./index.html")
+];
+
+// Non-critical secondary assets (optional precache)
+const NON_CRITICAL_PRECACHE_ASSETS = [
   getUrl("./index.html?source=pwa"),
   getUrl("./?source=pwa"),
   getUrl("./manifest.json"),
@@ -15,7 +19,9 @@ const PRECACHE_ASSETS = [
   getUrl("./favicon.png"),
   getUrl("./favicon.ico"),
   getUrl("./favicon.svg"),
+  getUrl("./favicon-iYpuZci1.png"),
   getUrl("./apple-touch-icon.png"),
+  getUrl("./apple-touch-icon-D76Ipk7H.png"),
   getUrl("./icons/zaker-study-192.png"),
   getUrl("./icons/zaker-study-512.png"),
   getUrl("./icons/zaker-study-maskable.png"),
@@ -26,23 +32,26 @@ const PRECACHE_ASSETS = [
   getUrl("./icons/icon-512.png"),
   getUrl("./screenshots/screenshot-mobile.png"),
   getUrl("./screenshots/screenshot-desktop.png"),
-  getUrl("./fonts/fonts.css"),
-  getUrl("./fonts/font_0_SLXVc1nY6HkvangtZmpQdkhzfH5lkSscQyyS4J0.woff2"),
-  getUrl("./fonts/font_1_QGYvz_MVcBeNP4NJuktqQ4E.woff2"),
-  getUrl("./fonts/font_2_SLXVc1nY6HkvangtZmpQdkhzfH5lkSscRiyS.woff2"),
-  getUrl("./fonts/font_3_SLXVc1nY6HkvangtZmpQdkhzfH5lkSscSCyS4J0.woff2"),
-  getUrl("./fonts/font_4_QGYvz_MVcBeNP4NJtEtq.woff2"),
   getUrl("./widgets/balance.json"),
   getUrl("./widgets/balance-data.json")
 ];
 
-// 1. Install Event: Precache everything immediately and skip waiting
+// 1. Install Event: Precache mandatory assets (must succeed) and non-critical assets
 self.addEventListener("install", (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
-      console.log("[Zaker SW] Precaching assets for 100% offline support...");
-      for (const asset of PRECACHE_ASSETS) {
+      console.log("[Zaker SW] Precaching mandatory core assets...");
+      for (const asset of MANDATORY_PRECACHE_ASSETS) {
+        const resp = await fetch(asset, { cache: "reload" });
+        if (!resp || (resp.status !== 200 && resp.type !== "opaque")) {
+          throw new Error(`[Zaker SW] Mandatory asset failed to fetch: ${asset}`);
+        }
+        await cache.put(asset, resp);
+      }
+
+      console.log("[Zaker SW] Precaching non-critical assets...");
+      for (const asset of NON_CRITICAL_PRECACHE_ASSETS) {
         try {
           const resp = await fetch(asset, { cache: "reload" });
           if (resp && (resp.status === 200 || resp.type === "opaque")) {
@@ -109,10 +118,11 @@ self.addEventListener("fetch", (event) => {
 
           return fetch(req).then((netResp) => {
             if (netResp && netResp.status === 200) {
-              const copy = netResp.clone();
+              const c1 = netResp.clone();
+              const c2 = netResp.clone();
               caches.open(CACHE_NAME).then((cache) => {
-                cache.put(req, copy);
-                cache.put(getUrl("./index.html"), copy.clone());
+                cache.put(req, c1);
+                cache.put(getUrl("./index.html"), c2);
               });
             }
             return netResp;
@@ -280,7 +290,7 @@ async function trigger5HourTasksReminderNotification(force = false) {
       tag: "zaker-5h-task-reminder",
       renotify: true,
       vibrate: [200, 100, 200, 100, 300],
-      data: { url: getUrl("./?action=tasks") }
+      data: { url: getUrl("./#/tasks") }
     });
   } catch (err) {
     console.warn("[Zaker SW] 5h task reminder notification error:", err);
