@@ -55,11 +55,11 @@ for m in glob.glob("*manifest*.*") + glob.glob("dist/*manifest*.*"):
             f.write(manifest_data)
 
 # 6. Synchronize sw.js
-with open("sw.js", "r", encoding="utf-8") as f:
+with open("public/sw.js", "r", encoding="utf-8") as f:
     sw_data = f.read()
 
-for sw_dest in ["public/sw.js", "dist/sw.js"]:
-    with open(sw_dest, "w", encoding="utf-8") as f:
+for sw_dest in ["sw.js", "dist/sw.js"]:
+    with open(sw_dest, "w", encoding="utf-8", newline="\n") as f:
         f.write(sw_data)
 
 print("sync_dist completed successfully!")

@@ -1,5 +1,5 @@
 // Zaker (ذاكر) - 100% Offline-First Service Worker with Background 5h Tasks & Daily Notifications
-const CACHE_NAME = "zaker-v4";
+const CACHE_NAME = "zaker-v5";
 
 // Helper to resolve URLs relative to this Service Worker script's directory
 const getUrl = (rel) => new URL(rel, self.location.href).href;
@@ -348,4 +348,4 @@ self.addEventListener("message", (event) => {
   } else if (data.type === "TEST_DAILY_MOTIVATION") {
     event.waitUntil(triggerDailyMotivationNotification(true));
   }
-});\n
+});
