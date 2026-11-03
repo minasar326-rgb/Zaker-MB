@@ -187,7 +187,7 @@ function TimerPage() {
   useEffect(() => {
     document.title = running
       ? `${fmt(left)} · ${activeSubject} — ${t(mode)}`
-      : `${t("navTimer")} — Zaker`;
+      : `${t("navTimer")} — ${t("appName")}`;
   }, [left, running, mode, activeSubject, t]);
 
   const switchMode = (m: Mode, autoRun = false) => {

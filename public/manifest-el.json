@@ -1,0 +1,106 @@
+{
+  "id": "https://minasar326-rgb.github.io/Zaker-MB/",
+  "name": "Zaker - Πρόγραμμα Μελέτης & Εργασίες",
+  "short_name": "Zaker",
+  "description": "Zaker: οργάνωση προγράμματος μελέτης, διαχείριση σχολικών εργασιών και χρονόμετρο εστίασης - λειτουργεί 100% offline.",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#faf6ed",
+  "theme_color": "#f26430",
+  "dir": "ltr",
+  "lang": "el",
+  "categories": [
+    "education",
+    "productivity",
+    "utilities"
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "web+zaker",
+      "url": "./#/%s"
+    }
+  ],
+  "icons": [
+    {
+      "src": "./icons/zaker-study-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/zaker-study-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/zaker-study-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./screenshots/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Διεπαφή κινητού Zaker"
+    },
+    {
+      "src": "./screenshots/screen-greek.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Πίνακας ελέγχου Zaker"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ημερήσιο Πρόγραμμα",
+      "short_name": "Πρόγραμμα",
+      "description": "Δείτε το πρόγραμμα και τις ενότητες μελέτης",
+      "url": "./#/schedule",
+      "icons": [
+        {
+          "src": "./icons/zaker-study-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Προσθήκη Εργασίας",
+      "short_name": "Νέα Εργασία",
+      "description": "Προσθήκη νέας σχολικής εργασίας",
+      "url": "./#/tasks",
+      "icons": [
+        {
+          "src": "./icons/zaker-study-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Χρονόμετρο Εστίασης",
+      "short_name": "Χρονόμετρο",
+      "description": "Έναρξη συνεδρίας συγκέντρωσης Pomodoro",
+      "url": "./#/timer",
+      "icons": [
+        {
+          "src": "./icons/zaker-study-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 export type Lang = "ar" | "en" | "el";
 
+export const GREEK_APP_NAME = "Zaker";
+
 export const LANGS: { code: Lang; label: string }[] = [
   { code: "ar", label: "العربية" },
   { code: "en", label: "English" },
@@ -7,7 +9,7 @@ export const LANGS: { code: Lang; label: string }[] = [
 ];
 
 const dict = {
-  appName: { ar: "ذاكِر", en: "Zaker", el: "Zaker" },
+  appName: { ar: "ذاكر", en: "Study", el: GREEK_APP_NAME },
   tagline: {
     ar: "نظّم مذاكرتك وأنجز مهامك",
     en: "Plan your studies, finish your tasks",
@@ -71,7 +73,7 @@ const dict = {
   seeAll: { ar: "عرض الكل", en: "See all", el: "Όλα" },
 
   // Student Profile & Onboarding
-  welcomeStudent: { ar: "مرحباً بك في ذاكِر!", en: "Welcome to Zaker!", el: "Καλώς ήρθατε στο Zaker!" },
+  welcomeStudent: { ar: "مرحباً بك في ذاكر!", en: "Welcome to Study!", el: "Καλώς ήρθατε στο Zaker!" },
   whatIsYourName: { ar: "ما اسمك يا بطل؟", en: "What is your name?", el: "Ποιο είναι το όνομά σου;" },
   namePlaceholder: { ar: "اكتب اسمك هنا...", en: "Type your name here...", el: "Γράψε το όνομά σου εδώ..." },
   startJourney: { ar: "ابدأ رحلة التفوق 🚀", en: "Start Your Journey 🚀", el: "Ξεκινήστε το ταξίδι σας 🚀" },
@@ -240,6 +242,23 @@ const dict = {
   weeklyTimetable: { ar: "جدول المذاكرة الأسبوعي", en: "Weekly Study Schedule", el: "Εβδομαδιαίο Πρόγραμμα Μελέτης" },
   placeholderPlanSubject: { ar: "مثال: رياضيات، فيزياء، لغة عربية...", en: "e.g. Math, Physics, English...", el: "π.χ. Μαθηματικά, Φυσική..." },
   placeholderPlanNotes: { ar: "مثال: حل صفحة 45، تلخيص الفصل الثاني...", en: "e.g. Solve page 45, summarize chapter 2...", el: "π.χ. Λύση σελίδας 45..." },
+  // Encouragement & Background Notifications
+  dailyEncouragement: { ar: "رسالة اليوم التشجيعية 🌟", en: "Daily Motivation 🌟", el: "Ημερήσια Ενθάρρυνση 🌟" },
+  todayTip: { ar: "💡 نصيحة اليوم:", en: "💡 Tip of the day:", el: "💡 Συμβουλή της ημέρας:" },
+  signatureChime: { ar: "النغمة المميزة 🎵", en: "Signature Chime 🎵", el: "Χαρακτηριστικός Ήχος 🎵" },
+  playingChime: { ar: "جارِ العزف 🎵", en: "Playing 🎵", el: "Αναπαραγωγή 🎵" },
+  listenChimeTitle: { ar: "استمع لنغمة التشجيع المميزة", en: "Listen to the signature encouragement chime", el: "Ακούστε τον χαρακτηριστικό ήχο ενθάρρυνσης" },
+  anotherQuote: { ar: "رسالة أخرى 🎲", en: "Another Quote 🎲", el: "Άλλο Μήνυμα 🎲" },
+  anotherQuoteTitle: { ar: "عرض رسالة تشجيعية أخرى", en: "Show another motivational quote", el: "Εμφάνιση άλλου μηνύματος ενθάρρυνσης" },
+  cheerNotifBtn: { ar: "إشعار تشجيع 🔔", en: "Cheer Notification 🔔", el: "Ειδοποίηση Ενθάρρυνσης 🔔" },
+  cheerNotifSent: { ar: "أُرسل الإشعار اليوم ✓", en: "Notification sent today ✓", el: "Στάلθηκε σήμερα ✓" },
+  sendCheerNotifTitle: { ar: "إرسال إشعار تشجيعي مع النغمة", en: "Send encouragement notification with chime", el: "Αποστολή ειδοποίησης ενθάρρυνσης με ήχο" },
+  taskReminder5hBtn: { ar: "تذكير المهام (كل 5 س) ⏰", en: "Task Reminder (every 5h) ⏰", el: "Υπενθύμιση Εργασιών (ανά 5 ώρες) ⏰" },
+  taskReminder5hSent: { ar: "تم إرسال تذكير المهام ✓", en: "Task reminder sent ✓", el: "Η υπενθύμιση στάλθηκε ✓" },
+  taskReminder5hTitle: { ar: "تجربة إشعار تذكير المهام (يعمل أثناء فتح التطبيق، وقد يعمل في الخلفية على الأجهزة الداعمة)", en: "Test 5-hour task reminder (works while open, and in background on supported devices)", el: "Δοκιμή υπενθύμισης εργασιών (λειτουργεί ενώ είναι ανοιχτό, και στο παρασκήνιο)" },
+  autoScheduleNotice: { ar: "الجدولة التلقائية: إشعار تحفيز يومي + تذكير المهام كل 5 ساعات يعمل أثناء فتح التطبيق، وقد يعمل في الخلفية على الأجهزة والمتصفحات التي تدعم ذلك", en: "Automatic scheduling: Daily motivation + 5-hour task reminder (runs while open, and in background where supported)", el: "Αυτόματος προγραμματισμός: Καθημερινή ενθάρρυνση + υπενθύμιση εργασιών ανά 5 ώρες (ενώ είναι ανοιχτό, και στο παρασκήνιο)" },
+  tasksRemainingNotice: { ar: "مهام متبقية بانتظارك 📚", en: "tasks remaining for you 📚", el: "εργασίες εκκρεμούν 📚" },
+  allTasksCompleted: { ar: "جميع المهام مكتملة! 🎉", en: "All tasks completed! 🎉", el: "Όλες οι εργασίες ολοκληρώθηκαν! 🎉" },
 } as const;
 
 export type Key = keyof typeof dict;

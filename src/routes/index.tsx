@@ -82,18 +82,18 @@ function Index() {
 
   // Daily Motivation state
   const [motivationQuote, setMotivationQuote] = useState<EncouragementQuote>(() =>
-    getDailyMotivation(studentName)
+    getDailyMotivation(studentName, lang)
   );
   const [isPlayingChime, setIsPlayingChime] = useState(false);
   const [motivationNotifSent, setMotivationNotifSent] = useState(false);
 
   useEffect(() => {
-    setMotivationQuote(getDailyMotivation(studentName));
-  }, [studentName]);
+    setMotivationQuote(getDailyMotivation(studentName, lang));
+  }, [studentName, lang]);
 
   useEffect(() => {
     if (ready && perm === "granted") {
-      sendDailyMotivationNotification({ studentName, force: false }).then((sent) => {
+      sendDailyMotivationNotification({ studentName, lang, force: false }).then((sent) => {
         if (sent) setMotivationNotifSent(true);
       });
     }
@@ -106,7 +106,7 @@ function Index() {
   };
 
   const handleNextQuote = () => {
-    setMotivationQuote(getRandomMotivation(studentName, motivationQuote.id));
+    setMotivationQuote(getRandomMotivation(studentName, motivationQuote.id, lang));
   };
 
   const [taskReminderSent, setTaskReminderSent] = useState(false);
@@ -117,13 +117,13 @@ function Index() {
         const result = await Notification.requestPermission();
         setPerm(result);
         if (result === "granted") {
-          send5HourTaskReminderNotification({ tasks, studentName, force: true });
+          send5HourTaskReminderNotification({ tasks, studentName, lang, force: true });
           setTaskReminderSent(true);
           setTimeout(() => setTaskReminderSent(false), 3000);
         }
       }
     } else {
-      send5HourTaskReminderNotification({ tasks, studentName, force: true });
+      send5HourTaskReminderNotification({ tasks, studentName, lang, force: true });
       setTaskReminderSent(true);
       setTimeout(() => setTaskReminderSent(false), 3000);
     }
@@ -135,12 +135,12 @@ function Index() {
         const result = await Notification.requestPermission();
         setPerm(result);
         if (result === "granted") {
-          sendDailyMotivationNotification({ studentName, quote: motivationQuote, force: true });
+          sendDailyMotivationNotification({ studentName, quote: motivationQuote, lang, force: true });
           setMotivationNotifSent(true);
         }
       }
     } else {
-      sendDailyMotivationNotification({ studentName, quote: motivationQuote, force: true });
+      sendDailyMotivationNotification({ studentName, quote: motivationQuote, lang, force: true });
       setMotivationNotifSent(true);
     }
   };
@@ -324,7 +324,7 @@ function Index() {
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-primary text-primary-foreground px-3 py-0.5 text-xs font-black shadow-[var(--shadow-pop-sm)]">
               <Sparkles className="size-3.5 animate-spin" />
-              <span>رسالة اليوم التشجيعية 🌟</span>
+              <span>{t("dailyEncouragement")}</span>
             </div>
             
             <p className="text-lg md:text-xl font-extrabold text-foreground leading-relaxed">
@@ -333,7 +333,7 @@ function Index() {
             
             {motivationQuote.tip && (
               <p className="text-xs md:text-sm font-bold text-muted-foreground flex items-center gap-1.5 pt-1">
-                <span className="text-primary font-black">💡 نصيحة اليوم:</span> {motivationQuote.tip}
+                <span className="text-primary font-black">{t("todayTip")}</span> {motivationQuote.tip}
               </p>
             )}
           </div>
@@ -345,40 +345,40 @@ function Index() {
               className={`pop-btn text-xs md:text-sm font-black flex items-center gap-2 ${
                 isPlayingChime ? "bg-accent scale-95" : "bg-card"
               }`}
-              title="استمع لنغمة التشجيع المميزة"
+              title={t("listenChimeTitle")}
             >
               <Volume2 className={`size-4 text-primary ${isPlayingChime ? "animate-bounce" : ""}`} />
-              {isPlayingChime ? "جارِ العزف 🎵" : "النغمة المميزة 🎵"}
+              {isPlayingChime ? t("playingChime") : t("signatureChime")}
             </button>
 
             <button
               type="button"
               onClick={handleNextQuote}
               className="pop-btn bg-card text-xs md:text-sm font-black flex items-center gap-2"
-              title="عرض رسالة تشجيعية أخرى"
+              title={t("anotherQuoteTitle")}
             >
               <RefreshCw className="size-4 text-secondary-foreground" />
-              رسالة أخرى 🎲
+              {t("anotherQuote")}
             </button>
 
             <button
               type="button"
               onClick={handleSendNotification}
               className="pop-btn bg-primary text-primary-foreground text-xs md:text-sm font-black flex items-center gap-2"
-              title="إرسال إشعار تشجيعي مع النغمة"
+              title={t("sendCheerNotifTitle")}
             >
               <BellRing className="size-4" />
-              {motivationNotifSent ? "أُرسل الإشعار اليوم ✓" : "إشعار تشجيع 🔔"}
+              {motivationNotifSent ? t("cheerNotifSent") : t("cheerNotifBtn")}
             </button>
 
             <button
               type="button"
               onClick={handleTest5HourReminder}
               className="pop-btn bg-sky text-foreground text-xs md:text-sm font-black flex items-center gap-2"
-              title="تجربة إشعار تذكير المهام (يعمل أثناء فتح التطبيق، وقد يعمل في الخلفية على الأجهزة الداعمة)"
+              title={t("taskReminder5hTitle")}
             >
               <Clock className="size-4 text-primary" />
-              {taskReminderSent ? "تم إرسال تذكير المهام ✓" : "تذكير المهام (كل 5 س) ⏰"}
+              {taskReminderSent ? t("taskReminder5hSent") : t("taskReminder5hBtn")}
             </button>
           </div>
         </div>
@@ -387,10 +387,10 @@ function Index() {
         <div className="mt-4 pt-3 border-t-2 border-foreground/15 flex flex-wrap items-center justify-between text-xs font-bold text-foreground/85 gap-2">
           <div className="flex items-center gap-2">
             <span className="inline-block size-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>الجدولة التلقائية: إشعار تحفيز يومي + تذكير المهام كل 5 ساعات يعمل أثناء فتح التطبيق، وقد يعمل في الخلفية على الأجهزة والمتصفحات التي تدعم ذلك</span>
+            <span>{t("autoScheduleNotice")}</span>
           </div>
           <span className="bg-card px-2.5 py-0.5 rounded-full border border-foreground/20 text-muted-foreground font-extrabold">
-            {pending.length > 0 ? `${pending.length} مهام متبقية بانتظارك 📚` : "جميع المهام مكتملة! 🎉"}
+            {pending.length > 0 ? `${pending.length} ${t("tasksRemainingNotice")}` : t("allTasksCompleted")}
           </span>
         </div>
       </section>

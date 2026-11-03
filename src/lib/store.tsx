@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { playChime } from "./audio";
+import { applyBranding } from "./branding";
 import { translate, type Key, type Lang } from "./i18n";
 import {
   syncTasksToServiceWorker,
@@ -197,28 +198,31 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (ready) localStorage.setItem(KEY, JSON.stringify(state));
-    document.documentElement.lang = state.lang;
-    document.documentElement.dir = state.lang === "ar" ? "rtl" : "ltr";
+    if (ready) {
+      localStorage.setItem(KEY, JSON.stringify(state));
+      applyBranding(state.lang);
+    }
   }, [state, ready]);
 
   // Synchronize tasks and register background periodic notifications
   useEffect(() => {
     if (!ready) return;
+    applyBranding(state.lang);
     registerPeriodicSyncs();
-    syncTasksToServiceWorker(state.tasks, state.studentName);
+    syncTasksToServiceWorker(state.tasks, state.studentName, state.lang);
     const stopIntervals = startForegroundBackgroundIntervals(
       () => stateRef.current.tasks,
-      () => stateRef.current.studentName
+      () => stateRef.current.studentName,
+      () => stateRef.current.lang
     );
     return () => stopIntervals();
   }, [ready]);
 
   useEffect(() => {
     if (ready) {
-      syncTasksToServiceWorker(state.tasks, state.studentName);
+      syncTasksToServiceWorker(state.tasks, state.studentName, state.lang);
     }
-  }, [state.tasks, state.studentName, ready]);
+  }, [state.tasks, state.studentName, state.lang, ready]);
 
   const t = useCallback((k: Key) => translate(state.lang, k), [state.lang]);
 

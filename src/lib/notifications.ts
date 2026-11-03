@@ -1,22 +1,22 @@
+import { type Task } from "./store";
+import { getDailyMotivation, getDefaultStudentName } from "./motivation";
 import { playMotivationChime } from "./audio";
-import { getDailyMotivation } from "./motivation";
-import type { Task } from "./store";
+import { type Lang, GREEK_APP_NAME } from "./i18n";
 
-const DB_NAME = "zaker_db";
+const DB_NAME = "zaker-notifications-sync-db";
+const STORE_NAME = "sync-store";
 const DB_VERSION = 1;
-const STORE_NAME = "sync_data";
 
-// Open IndexedDB in the client thread
-function openZakerDB(): Promise<IDBDatabase> {
+function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     if (typeof indexedDB === "undefined") {
-      reject(new Error("IndexedDB not supported"));
-      return;
+      return reject(new Error("IndexedDB not available"));
     }
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = () => {
-      if (!req.result.objectStoreNames.contains(STORE_NAME)) {
-        req.result.createObjectStore(STORE_NAME);
+      const db = req.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
       }
     };
     req.onsuccess = () => resolve(req.result);
@@ -24,29 +24,26 @@ function openZakerDB(): Promise<IDBDatabase> {
   });
 }
 
-export async function setSyncData(key: string, value: unknown): Promise<boolean> {
+export async function setSyncData(key: string, value: unknown): Promise<void> {
   try {
-    const db = await openZakerDB();
-    return new Promise((resolve) => {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, "readwrite");
-      const store = tx.objectStore(STORE_NAME);
-      store.put(value, key);
-      tx.oncomplete = () => resolve(true);
-      tx.onerror = () => resolve(false);
+      tx.objectStore(STORE_NAME).put(value, key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
     });
   } catch (err) {
-    console.warn("[Zaker DB] setSyncData error:", err);
-    return false;
+    // Non-critical local IndexedDB write
   }
 }
 
 export async function getSyncData<T = unknown>(key: string): Promise<T | null> {
   try {
-    const db = await openZakerDB();
+    const db = await openDB();
     return new Promise((resolve) => {
       const tx = db.transaction(STORE_NAME, "readonly");
-      const store = tx.objectStore(STORE_NAME);
-      const req = store.get(key);
+      const req = tx.objectStore(STORE_NAME).get(key);
       req.onsuccess = () => resolve((req.result as T) ?? null);
       req.onerror = () => resolve(null);
     });
@@ -56,13 +53,14 @@ export async function getSyncData<T = unknown>(key: string): Promise<T | null> {
 }
 
 /**
- * Sync active tasks and student name to IndexedDB and Service Worker
+ * Sync active tasks, student name, and language to IndexedDB and Service Worker
  */
-export async function syncTasksToServiceWorker(tasks: Task[], studentName: string) {
+export async function syncTasksToServiceWorker(tasks: Task[], studentName: string, lang: Lang = "ar") {
   try {
     // 1. Save to local IndexedDB for offline service worker access
     await setSyncData("tasks", tasks);
     await setSyncData("studentName", studentName);
+    await setSyncData("lang", lang);
 
     // 2. Broadcast to active service worker controller
     if (typeof navigator !== "undefined" && "serviceWorker" in navigator && navigator.serviceWorker.controller) {
@@ -77,10 +75,28 @@ export async function syncTasksToServiceWorker(tasks: Task[], studentName: strin
           priority: t.priority,
         })),
         studentName,
+        lang,
       });
     }
   } catch (e) {
     console.warn("[Zaker Sync] Sync to service worker error:", e);
+  }
+}
+
+/**
+ * Sync language setting specifically to Service Worker and IndexedDB
+ */
+export async function syncLangToServiceWorker(lang: Lang) {
+  try {
+    await setSyncData("lang", lang);
+    if (typeof navigator !== "undefined" && "serviceWorker" in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: "SET_LANG",
+        lang,
+      });
+    }
+  } catch (e) {
+    console.warn("[Zaker Sync] Sync lang to service worker error:", e);
   }
 }
 
@@ -109,37 +125,76 @@ const KEY_LAST_5H_REMINDER = "zaker_last_5h_reminder";
 const KEY_LAST_DAILY_NOTIF = "zaker_last_motivation_date";
 
 /**
- * Generate 5-Hour task reminder notification content
+ * Generate 5-Hour task reminder notification content in the requested language
  */
-export function generate5HourTaskReminderText(tasks: Task[], studentName: string) {
+export function generate5HourTaskReminderText(tasks: Task[], studentName: string, lang: Lang = "ar") {
   const pending = tasks.filter((t) => !t.done);
-  const name = studentName && studentName.trim() ? studentName.trim() : "يا بطل";
+  const name = studentName && studentName.trim() ? studentName.trim() : getDefaultStudentName(lang);
+  const appTitle = lang === "en" ? "Study" : lang === "el" ? GREEK_APP_NAME : "ذاكر";
 
   if (pending.length === 0) {
-    return {
-      title: `ذاكر - رائع جداً يا ${name}! 🌟`,
-      body: `جميع مهامك الدراسية مكتملة حتى الآن! خذ استراحة أو استعد للمهام القادمة.`,
-      pendingCount: 0,
-    };
+    const title =
+      lang === "en"
+        ? `${appTitle} - Awesome job, ${name}! 🌟`
+        : lang === "el"
+        ? `${appTitle} - Εξαιρετική δουλειά, ${name}! 🌟`
+        : `ذاكر - رائع جداً يا ${name}! 🌟`;
+
+    const body =
+      lang === "en"
+        ? `All your study tasks are completed for now! Take a break or prepare for upcoming ones.`
+        : lang === "el"
+        ? `Όλες οι εργασίες σου έχουν ολοκληρωθεί! Κάνε ένα διάλειμμα ή ετοιμάσου για τις επόμενες.`
+        : `جميع مهامك الدراسية مكتملة حتى الآن! خذ استراحة أو استعد للمهام القادمة.`;
+
+    return { title, body, pendingCount: 0 };
   }
 
   if (pending.length === 1) {
     const t = pending[0];
-    const subText = t.subject ? `في مادة ${t.subject}` : "";
-    return {
-      title: `ذاكر - تذكير المهام كل 5 ساعات ⏰`,
-      body: `يا ${name}، لديك مهمة دراسية بانتظارك: "${t.title}" ${subText}.. أنجزها الآن لتشعر براحة الإنجاز! 💪`,
-      pendingCount: 1,
-    };
+    const subText = t.subject
+      ? lang === "en"
+        ? `in ${t.subject}`
+        : lang === "el"
+        ? `στο μάθημα ${t.subject}`
+        : `في مادة ${t.subject}`
+      : "";
+
+    const title =
+      lang === "en"
+        ? `${appTitle} - Task Reminder (every 5h) ⏰`
+        : lang === "el"
+        ? `${appTitle} - Υπενθύμιση Εργασιών (ανά 5 ώρες) ⏰`
+        : `ذاكر - تذكير المهام كل 5 ساعات ⏰`;
+
+    const body =
+      lang === "en"
+        ? `Hey ${name}, you have a study task waiting: "${t.title}" ${subText}.. Finish it now to feel accomplished! 💪`
+        : lang === "el"
+        ? `${name}, έχεις μια εργασία σε αναμονή: "${t.title}" ${subText}.. Ολοκλήρωσέ την τώρα! 💪`
+        : `يا ${name}، لديك مهمة دراسية بانتظارك: "${t.title}" ${subText}.. أنجزها الآن لتشعر براحة الإنجاز! 💪`;
+
+    return { title, body, pendingCount: 1 };
   }
 
   const first = pending[0];
   const subText = first.subject ? `(${first.subject})` : "";
-  return {
-    title: `ذاكر - تذكير المهام كل 5 ساعات ⏰`,
-    body: `يا ${name}، لديك ${pending.length} مهام دراسية متبقية لليوم! ابدأ بالمهمة الأولى: "${first.title}" ${subText} 🚀`,
-    pendingCount: pending.length,
-  };
+
+  const title =
+    lang === "en"
+      ? `${appTitle} - Task Reminder (every 5h) ⏰`
+      : lang === "el"
+      ? `${appTitle} - Υπενθύμιση Εργασιών (ανά 5 ώρες) ⏰`
+      : `ذاكر - تذكير المهام كل 5 ساعات ⏰`;
+
+  const body =
+    lang === "en"
+      ? `Hey ${name}, you have ${pending.length} study tasks remaining today! Start with the first: "${first.title}" ${subText} 🚀`
+      : lang === "el"
+      ? `${name}, έχεις ${pending.length} εργασίες να εκκρεμούν για σήμερα! Ξεκίνα με την πρώτη: "${first.title}" ${subText} 🚀`
+      : `يا ${name}، لديك ${pending.length} مهام دراسية متبقية لليوم! ابدأ بالمهمة الأولى: "${first.title}" ${subText} 🚀`;
+
+  return { title, body, pendingCount: pending.length };
 }
 
 /**
@@ -148,8 +203,10 @@ export function generate5HourTaskReminderText(tasks: Task[], studentName: string
 export async function send5HourTaskReminderNotification(options: {
   tasks: Task[];
   studentName: string;
+  lang?: Lang;
   force?: boolean;
 }): Promise<boolean> {
+  const lang: Lang = options.lang || "ar";
   const now = Date.now();
   const lastTimeStr = localStorage.getItem(KEY_LAST_5H_REMINDER);
   const lastTime = lastTimeStr ? parseInt(lastTimeStr, 10) : 0;
@@ -158,7 +215,7 @@ export async function send5HourTaskReminderNotification(options: {
     return false;
   }
 
-  const { title, body } = generate5HourTaskReminderText(options.tasks, options.studentName);
+  const { title, body } = generate5HourTaskReminderText(options.tasks, options.studentName, lang);
 
   // Play distinctive motivation chime
   try {
@@ -170,16 +227,17 @@ export async function send5HourTaskReminderNotification(options: {
   // Deliver notification
   if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
     try {
+      const iconPath = lang === "en" ? "./icons/en/zaker-study-192.png" : "./icons/zaker-study-192.png";
       const notifOptions: NotificationOptions & {
         vibrate?: number[];
         data?: { url: string };
         renotify?: boolean;
       } = {
         body,
-        icon: "./icons/zaker-study-192.png",
-        badge: "./icons/zaker-study-192.png",
-        dir: "rtl",
-        lang: "ar",
+        icon: iconPath,
+        badge: iconPath,
+        dir: lang === "ar" ? "rtl" : "ltr",
+        lang,
         tag: "zaker-5h-task-reminder",
         renotify: true,
         vibrate: [200, 100, 200, 100, 300],
@@ -209,8 +267,10 @@ export async function send5HourTaskReminderNotification(options: {
  */
 export async function sendDailyMorningNotification(options: {
   studentName: string;
+  lang?: Lang;
   force?: boolean;
 }): Promise<boolean> {
+  const lang: Lang = options.lang || "ar";
   const todayStr = new Date().toISOString().split("T")[0];
   const lastDate = localStorage.getItem(KEY_LAST_DAILY_NOTIF);
 
@@ -218,7 +278,7 @@ export async function sendDailyMorningNotification(options: {
     return false;
   }
 
-  const quote = getDailyMotivation(options.studentName);
+  const quote = getDailyMotivation(options.studentName, lang);
 
   // Play chime
   try {
@@ -229,16 +289,29 @@ export async function sendDailyMorningNotification(options: {
 
   if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
     try {
+      const appTitle = lang === "en" ? "Study" : lang === "el" ? GREEK_APP_NAME : "ذاكر";
+      const title =
+        lang === "en"
+          ? `${appTitle} - Daily Motivation 🌟`
+          : lang === "el"
+          ? `${appTitle} - Ημερήσια Ενθάρρυνση 🌟`
+          : `ذاكر - رسالة اليوم التشجيعية 🌟`;
+
+      const tipPrefix =
+        lang === "en" ? "💡 Tip: " : lang === "el" ? "💡 Συμβουλή: " : "💡 نصيحة: ";
+
+      const iconPath = lang === "en" ? "./icons/en/zaker-study-192.png" : "./icons/zaker-study-192.png";
+
       const notifOptions: NotificationOptions & {
         vibrate?: number[];
         data?: { url: string };
         renotify?: boolean;
       } = {
-        body: quote.text + (quote.tip ? `\n💡 نصيحة: ${quote.tip}` : ""),
-        icon: "./icons/zaker-study-192.png",
-        badge: "./icons/zaker-study-192.png",
-        dir: "rtl",
-        lang: "ar",
+        body: quote.text + (quote.tip ? `\n${tipPrefix}${quote.tip}` : ""),
+        icon: iconPath,
+        badge: iconPath,
+        dir: lang === "ar" ? "rtl" : "ltr",
+        lang,
         tag: "zaker-daily-motivation",
         renotify: true,
         vibrate: [150, 75, 150, 75, 300],
@@ -247,9 +320,9 @@ export async function sendDailyMorningNotification(options: {
 
       if ("serviceWorker" in navigator && navigator.serviceWorker.ready) {
         const reg = await navigator.serviceWorker.ready;
-        await reg.showNotification("ذاكر - رسالة اليوم التشجيعية 🌟", notifOptions);
+        await reg.showNotification(title, notifOptions);
       } else {
-        new Notification("ذاكر - رسالة اليوم التشجيعية 🌟", notifOptions);
+        new Notification(title, notifOptions);
       }
 
       localStorage.setItem(KEY_LAST_DAILY_NOTIF, todayStr);
@@ -268,28 +341,30 @@ export async function sendDailyMorningNotification(options: {
  */
 export function startForegroundBackgroundIntervals(
   getTasks: () => Task[],
-  getStudentName: () => string
+  getStudentName: () => string,
+  getLang: () => Lang = () => "ar"
 ) {
   const check = () => {
     const tasks = getTasks();
     const name = getStudentName();
+    const lang = getLang();
 
     // Sync state to SW
-    syncTasksToServiceWorker(tasks, name);
+    syncTasksToServiceWorker(tasks, name, lang);
 
     // Check 5h task reminder
     const now = Date.now();
     const last5hStr = localStorage.getItem(KEY_LAST_5H_REMINDER);
     const last5h = last5hStr ? parseInt(last5hStr, 10) : 0;
     if (!last5h || now - last5h >= FIVE_HOURS_MS) {
-      send5HourTaskReminderNotification({ tasks, studentName: name, force: false });
+      send5HourTaskReminderNotification({ tasks, studentName: name, lang, force: false });
     }
 
     // Check daily motivation
     const todayStr = new Date().toISOString().split("T")[0];
     const lastDaily = localStorage.getItem(KEY_LAST_DAILY_NOTIF);
     if (lastDaily !== todayStr) {
-      sendDailyMorningNotification({ studentName: name, force: false });
+      sendDailyMorningNotification({ studentName: name, lang, force: false });
     }
   };
 

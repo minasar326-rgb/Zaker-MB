@@ -50,7 +50,7 @@ if os.path.exists("dist/index.html"):
     copy_if_exists("dist/index.html", "404.html")
     print("Copied updated dist/index.html to index.html, Zaker.html, 404.html")
 
-# 5. Synchronize manifest.json across existing manifest variants only (no merged names)
+# 5. Synchronize manifest.json across Arabic variants only (never overwrite manifest-en or manifest-el)
 with open("public/manifest.json", "r", encoding="utf-8") as f:
     manifest_data = f.read()
 
@@ -59,6 +59,9 @@ existing_manifests = set(glob.glob("manifest.json") + glob.glob("manifest-*.json
 
 for m in existing_manifests:
     base = os.path.basename(m)
+    # Never overwrite localized manifests
+    if "manifest-en" in base or "manifest-el" in base:
+        continue
     # Ignore any merged names like manifest-*-*.json
     if base.count("-") > 1:
         continue

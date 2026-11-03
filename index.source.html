@@ -18,6 +18,46 @@
     <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
     <link rel="manifest" href="./manifest.json" />
 
+    <!-- تبديل الاسم والأيقونة والمانيفست مبكراً حسب اللغة المخزنة -->
+    <script>
+      (function() {
+        try {
+          var raw = localStorage.getItem('zaker-state-v4');
+          var lang = 'ar';
+          if (raw) {
+            var parsed = JSON.parse(raw);
+            if (parsed && parsed.lang) lang = parsed.lang;
+          }
+          document.documentElement.lang = lang;
+          document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+          var titles = {
+            ar: 'ذاكر - تنظيم اليوم الدراسي وجدول المذاكرة والمهام اليومية',
+            en: 'Study - Daily Study Planner & Tasks',
+            el: 'Zaker - Πρόγραμμα Μελέτης & Εργασίες'
+          };
+          var appNames = { ar: 'ذاكر', en: 'Study', el: 'Zaker' };
+          document.title = titles[lang] || titles.ar;
+
+          var manifestHref = lang === 'en' ? './manifest-en.json' : (lang === 'el' ? './manifest-el.json' : './manifest.json');
+          var manifestEl = document.querySelector('link[rel="manifest"]');
+          if (manifestEl) manifestEl.setAttribute('href', manifestHref);
+
+          var appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+          if (appleTitle) appleTitle.setAttribute('content', appNames[lang] || appNames.ar);
+          var appNameEl = document.querySelector('meta[name="application-name"]');
+          if (appNameEl) appNameEl.setAttribute('content', appNames[lang] || appNames.ar);
+
+          if (lang === 'en') {
+            var appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+            if (appleIcon) appleIcon.setAttribute('href', './apple-touch-icon-en.png');
+            var favPng = document.querySelector('link[rel="icon"][type="image/png"]');
+            if (favPng) favPng.setAttribute('href', './favicon-en.png');
+          }
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- خطوط عربية محلية 100% بدون أي طلبات خارجية أو انترنت -->
     <link rel="stylesheet" href="./fonts/fonts.css" />
 
