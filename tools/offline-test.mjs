@@ -199,7 +199,7 @@ async function runOfflineTestSuite() {
 
       const swContent = fs.readFileSync(path.join(DIST_DIR, "sw.js"), "utf-8");
       const cacheNameMatch = swContent.match(/const CACHE_NAME = ["']([^"']+)["']/);
-      const expectedCacheName = cacheNameMatch ? cacheNameMatch[1] : "zaker-v7";
+      const expectedCacheName = cacheNameMatch ? cacheNameMatch[1] : "zaker-v8";
 
       if (!cacheKeys.includes(expectedCacheName)) {
         throw new Error(`Expected cache name '${expectedCacheName}' not found in: ${JSON.stringify(cacheKeys)}`);

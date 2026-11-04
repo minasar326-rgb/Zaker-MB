@@ -1,5 +1,5 @@
 // Zaker (ذاكر / Study) - 100% Offline-First Service Worker with Multi-Language Background 5h Tasks & Daily Notifications
-const CACHE_NAME = "zaker-v7";
+const CACHE_NAME = "zaker-v8";
 
 // Helper to resolve URLs relative to this Service Worker script's directory
 const getUrl = (rel) => new URL(rel, self.location.href).href;
