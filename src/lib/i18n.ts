@@ -19,6 +19,7 @@ const dict = {
   navSchedule: { ar: "الجدول", en: "Schedule", el: "Πρόγραμμα" },
   navTasks: { ar: "المهام", en: "Tasks", el: "Εργασίες" },
   navTimer: { ar: "المؤقت", en: "Timer", el: "Χρονόμετρο" },
+  installApp: { ar: "تثبيت التطبيق", en: "Install App", el: "Εγκατάσταση" },
   hello: { ar: "أهلاً! جاهز تذاكر؟", en: "Hey! Ready to study?", el: "Γεια! Έτοιμος για διάβασμα;" },
   todaySessions: { ar: "حصص اليوم في الجدول", en: "Today's sessions", el: "Σημερινές ενότητες" },
   dueSoon: { ar: "مهام قريبة", en: "Due soon", el: "Λήγουν σύντομα" },

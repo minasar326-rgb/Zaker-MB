@@ -1,0 +1,112 @@
+{
+  "id": "https://minasar326-rgb.github.io/Zaker-MB/",
+  "name": "Study - تنظيم اليوم الدراسي وجدول المذاكرة والمهام اليومية",
+  "short_name": "Study",
+  "description": "Study: تطبيق للمذاكرة وتحديد جداول للمهام اليومية والمذاكرة اليومية وتنظيم اليوم الدراسي والواجبات المدرسية - يعمل أوفلاين 100% بدون إنترنت.",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#faf6ed",
+  "theme_color": "#f26430",
+  "dir": "rtl",
+  "lang": "ar",
+  "categories": [
+    "education",
+    "productivity",
+    "utilities"
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "web+zaker",
+      "url": "./#/%s"
+    }
+  ],
+  "icons": [
+    {
+      "src": "./icons/zaker-study-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/zaker-study-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icons/zaker-study-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/zaker-study-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./screenshots/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "واجهة تطبيق ذاكر لتنظيم المذاكرة على الهاتف المحمول"
+    },
+    {
+      "src": "./screenshots/screenshot-desktop.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "لوحة تنظيم اليوم الدراسي وجدول المهام اليومية في ذاكر"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "جدول المذاكرة اليومي",
+      "short_name": "جدول المذاكرة",
+      "description": "عرض جدول الحصص والمهام الدراسية لليوم",
+      "url": "./#/schedule",
+      "icons": [
+        {
+          "src": "./icons/zaker-study-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "إضافة مهمة دراسية جديدة",
+      "short_name": "مهمة جديدة",
+      "description": "تسجيل واجب مدرسي أو مراجعة يومية",
+      "url": "./#/tasks",
+      "icons": [
+        {
+          "src": "./icons/zaker-study-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "مؤقت التركيز والمذاكرة",
+      "short_name": "مؤقت المذاكرة",
+      "description": "بدء جلسة مذاكرة بومودورو للتركيز العالي",
+      "url": "./#/timer",
+      "icons": [
+        {
+          "src": "./icons/zaker-study-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

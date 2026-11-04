@@ -1,8 +1,13 @@
 import { Link } from "@tanstack/react-router";
-import { CalendarDays, Home, ListChecks, Timer } from "lucide-react";
-import type { ReactNode } from "react";
+import { CalendarDays, Download, Home, ListChecks, Timer } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
 import { LANGS } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
+}
 
 const NAV = [
   { to: "/", key: "navHome", icon: Home },
@@ -13,6 +18,26 @@ const NAV = [
 
 export function Shell({ children }: { children: ReactNode }) {
   const { t, lang, setLang } = useStore();
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+
+  useEffect(() => {
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
+    window.addEventListener("beforeinstallprompt", handleBeforeInstall);
+    return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    await deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === "accepted") {
+      setDeferredPrompt(null);
+    }
+  };
+
   return (
     <div className="min-h-screen pb-24 md:pb-10">
       <header className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4">
@@ -36,18 +61,30 @@ export function Shell({ children }: { children: ReactNode }) {
             </Link>
           ))}
         </nav>
-        <select
-          aria-label="Language"
-          value={lang}
-          onChange={(e) => setLang(e.target.value as typeof lang)}
-          className="rounded-full border-2 bg-card px-3 py-1.5 text-sm font-bold"
-        >
-          {LANGS.map((l) => (
-            <option key={l.code} value={l.code}>
-              {l.label}
-            </option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          {deferredPrompt && (
+            <button
+              onClick={handleInstallClick}
+              className="pop-btn bg-sun text-foreground font-black text-xs flex items-center gap-1.5 py-1.5 px-3 animate-pulse"
+              title={t("installApp")}
+            >
+              <Download className="size-4" />
+              <span>{t("installApp")}</span>
+            </button>
+          )}
+          <select
+            aria-label="Language"
+            value={lang}
+            onChange={(e) => setLang(e.target.value as typeof lang)}
+            className="rounded-full border-2 bg-card px-3 py-1.5 text-sm font-bold"
+          >
+            {LANGS.map((l) => (
+              <option key={l.code} value={l.code}>
+                {l.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </header>
       <main className="mx-auto max-w-6xl px-4">{children}</main>
       <p className="mt-10 text-center text-xs text-muted-foreground">{t("localNote")}</p>
