@@ -1,12 +1,14 @@
 {
   "id": "https://minasar326-rgb.github.io/Zaker-MB/",
   "name": "Zaker - Πρόγραμμα Μελέτης & Εργασίες",
-  "short_name": "Zaker",
+  "short_name": "Study",
   "description": "Zaker: οργάνωση προγράμματος μελέτης, διαχείριση σχολικών εργασιών και χρονόμετρο εστίασης - λειτουργεί 100% offline.",
   "start_url": "./?source=pwa",
   "scope": "./",
   "display": "standalone",
   "display_override": [
+    "window-controls-overlay",
+    "tabbed",
     "standalone",
     "minimal-ui"
   ],
@@ -20,10 +22,100 @@
     "productivity",
     "utilities"
   ],
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "scope_extensions": [
+    {
+      "origin": "https://minasar326-rgb.github.io"
+    }
+  ],
+  "launch_handler": {
+    "client_mode": [
+      "navigate-existing",
+      "auto"
+    ]
+  },
+  "edge_side_panel": {
+    "preferred_width": 480
+  },
+  "tab_strip": {
+    "home_tab": {
+      "scope_patterns": [
+        "*"
+      ]
+    },
+    "new_tab_button": {
+      "url": "./#/schedule"
+    }
+  },
+  "note_taking": {
+    "new_note_url": "./#/tasks"
+  },
+  "file_handlers": [
+    {
+      "action": "./#/tasks",
+      "name": "Αρχείο Εργασιών Study",
+      "accept": {
+        "application/json": [
+          ".json"
+        ],
+        "application/x-zaker": [
+          ".zaker"
+        ],
+        "text/plain": [
+          ".txt"
+        ]
+      },
+      "icons": [
+        {
+          "src": "./icons/zaker-study-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "share_target": {
+    "action": "./#/tasks",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
   "protocol_handlers": [
     {
       "protocol": "web+zaker",
       "url": "./#/%s"
+    }
+  ],
+  "handle_links": "preferred",
+  "widgets": [
+    {
+      "name": "Study - Πρόγραμμα Μελέτης",
+      "short_name": "Πρόγραμμα",
+      "description": "Προβολή σημερινού προγράμματος και εργασιών",
+      "tag": "study-widget",
+      "template": "widget-template",
+      "ms_ac_template": "./widgets/balance.json",
+      "data": "./widgets/balance-data.json",
+      "type": "application/json",
+      "screenshots": [
+        {
+          "src": "./screenshots/screenshot-mobile.png",
+          "sizes": "390x844",
+          "label": "Προεπισκόπηση widget"
+        }
+      ],
+      "icons": [
+        {
+          "src": "./icons/zaker-study-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ],
   "icons": [
@@ -58,21 +150,21 @@
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Διεπαφή κινητού Zaker"
+      "label": "Προεπισκόπηση Study για κινητά"
     },
     {
-      "src": "./screenshots/screen-greek.png",
+      "src": "./screenshots/screenshot-desktop.png",
       "sizes": "1280x800",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Πίνακας ελέγχου Zaker"
+      "label": "Πίνακας ελέγχου Study για υπολογιστή"
     }
   ],
   "shortcuts": [
     {
-      "name": "Ημερήσιο Πρόγραμμα",
+      "name": "Πρόγραμμα Μελέτης",
       "short_name": "Πρόγραμμα",
-      "description": "Δείτε το πρόγραμμα και τις ενότητες μελέτης",
+      "description": "Προβολή μαθημάτων και εργασιών",
       "url": "./#/schedule",
       "icons": [
         {
@@ -83,9 +175,9 @@
       ]
     },
     {
-      "name": "Προσθήκη Εργασίας",
-      "short_name": "Νέα Εργασία",
-      "description": "Προσθήκη νέας σχολικής εργασίας",
+      "name": "Νέα Εργασία",
+      "short_name": "Εργασία",
+      "description": "Καταγραφή νέας σχολικής εργασίας",
       "url": "./#/tasks",
       "icons": [
         {
@@ -98,7 +190,7 @@
     {
       "name": "Χρονόμετρο Εστίασης",
       "short_name": "Χρονόμετρο",
-      "description": "Έναρξη συνεδρίας συγκέντρωσης Pomodoro",
+      "description": "Έναρξη συνεδρίας Pomodoro",
       "url": "./#/timer",
       "icons": [
         {
